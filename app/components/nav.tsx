@@ -38,7 +38,7 @@ export const Navigation: React.FC = () => {
 						*/}
 						<Link
 							href="/contact"
-							className="duration-200 text-zinc-400 hover:text-zinc-200"
+							className="text-base md:text-lg duration-200 text-zinc-400 hover:text-zinc-200"
 						>
 							Contact
 						</Link>
@@ -48,7 +48,7 @@ export const Navigation: React.FC = () => {
 						href="/"
 						className="duration-200 text-zinc-300 hover:text-zinc-100"
 					>
-						<ArrowLeft className="w-6 h-6 " />
+						<ArrowLeft className="w-7 h-7" />
 					</Link>
 				</div>
 			</div>
