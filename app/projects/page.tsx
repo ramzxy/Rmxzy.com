@@ -4,7 +4,7 @@ import { Navigation } from "../components/nav";
 
 export default function ProjectsPage() {
   return (
-    <div className="relative min-h-screen pb-16 bg-[#0C0C0C]">
+    <div className="relative min-h-screen pb-16 bg-black">
       <Navigation />
       <div className="flex flex-col items-center justify-center w-full h-[80vh]">
         <h1 className="text-3xl md:text-4xl font-bold text-zinc-300">

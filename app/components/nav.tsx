@@ -22,8 +22,8 @@ export const Navigation: React.FC = () => {
 			<div
 				className={`fixed inset-x-0 top-0 z-50 backdrop-blur duration-200 border-b ${
 					isIntersecting
-						? "bg-[#0C0C0C]/0 border-transparent"
-						: "bg-[#0C0C0C]/80 border-zinc-800"
+						? "bg-zinc-900/0 border-transparent"
+						: "bg-zinc-900/500 border-zinc-800"
 				}`}
 			>
 				<div className="container flex flex-row-reverse items-center justify-between p-6 mx-auto">
@@ -31,14 +31,14 @@ export const Navigation: React.FC = () => {
 						{/* Projects link hidden for now
 						<Link
 							href="/projects"
-							className="duration-200 text-[#9B3922]/80 hover:text-[#F2613F]"
+							className="duration-200 text-zinc-400 hover:text-zinc-100"
 						>
 							Projects
 						</Link>
 						*/}
 						<Link
 							href="/contact"
-							className="text-base md:text-lg duration-200 text-zinc-400 hover:text-zinc-200"
+							className="text-base md:text-lg duration-200 text-zinc-400 hover:text-zinc-100"
 						>
 							Contact
 						</Link>

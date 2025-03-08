@@ -84,7 +84,7 @@ export default function RootLayout({
         <link rel="shortcut icon" href="/favicon_new.png" type="image/png" />
       </head>
       <body
-        className={`bg-[#0C0C0C] ${process.env.NODE_ENV === "development" ? "debug-screens" : undefined
+        className={`bg-black ${process.env.NODE_ENV === "development" ? "debug-screens" : undefined
           }`}
       >
         {children}
