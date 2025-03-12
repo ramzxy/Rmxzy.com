@@ -13,15 +13,15 @@ const navigation = [
 export default function Home() {
   const [mounted, setMounted] = useState(false);
   
-  // Initialize the ASCII text hooks for mobile and desktop
+  // Initialize the ASCII text hooks for mobile and desktop with optimized settings
   const mobileAsciiTextRef = useAsciiText({
     animationCharacters: "▒░█",
     animationCharacterSpacing: 1,
     animationDelay: 4500,
     animationDirection: "down",
-    animationInterval: 20,
+    animationInterval: 40, // Increased interval to reduce lag
     animationLoop: true,
-    animationSpeed: 37,
+    animationSpeed: 50, // Increased speed to reduce lag
     font: bloody,
     text: ["R M X Z Y"],
   }) as RefObject<HTMLPreElement>;
@@ -65,16 +65,14 @@ export default function Home() {
       />
       
       {/* Mobile version (hidden on md and larger screens) */}
-      <div className="block md:hidden w-full max-w-[250px] overflow-hidden">
+      <div className="block md:hidden w-full max-w-[300px] overflow-hidden">
         <pre 
           ref={mobileAsciiTextRef}
-          className="py-2 px-0.5 z-20 text-transparent duration-1000 bg-white cursor-default text-edge-outline animate-title font-Courier New text-[0.4rem] whitespace-pre bg-clip-text transform scale-[0.4] origin-center"
+          className="py-2 px-0.5 z-20 text-transparent duration-1000 bg-white cursor-default text-edge-outline animate-title font-Courier New text-[0.6rem] whitespace-pre bg-clip-text transform scale-[0.6] origin-center"
           style={{
             textShadow: `
               0 0 5px rgba(255, 255, 255, 0.5),
-              0 0 10px rgba(255, 255, 255, 0.4),
-              0 0 15px rgba(255, 255, 255, 0.3),
-              0 0 20px rgba(150, 150, 255, 0.2)
+              0 0 10px rgba(255, 255, 255, 0.4)
             `,
             filter: 'brightness(1) contrast(1.05)'
           }}
@@ -85,7 +83,7 @@ export default function Home() {
       <div className="hidden md:block">
         <pre 
           ref={desktopAsciiTextRef}
-          className="py-3.5 px-0.5 z-20 text-transparent duration-1000 bg-white cursor-default text-edge-outline animate-title font-Courier New text-sm lg:text-base whitespace-pre bg-clip-text"
+          className="py-4 px-1 z-20 text-transparent duration-1000 bg-white cursor-default text-edge-outline animate-title font-Courier New text-sm lg:text-base whitespace-pre bg-clip-text"
           style={{
             textShadow: `
               0 0 5px rgba(255, 255, 255, 0.5),
