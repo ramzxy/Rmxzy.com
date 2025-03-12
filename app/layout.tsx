@@ -9,13 +9,13 @@ export const metadata: Metadata = {
     default: "rmxzy",
     template: "%s | rmxzy.com",
   },
-  description: "Software Engineer and 'Ethical' Hacker",
+  description: "Software Engineer and Hacker",
   openGraph: {
     title: "rmxzy",
     description:
-      "Software Engineer and 'Ethical' Hacker",
+      "Software Engineer and Hacker",
     url: "https://rmxzy.com",
-    siteName: "rmxzy.com",
+    siteName: "rmxzy",
     images: [
       {
         url: "https://rmxzy.com/og.png",
@@ -38,27 +38,11 @@ export const metadata: Metadata = {
     },
   },
   twitter: {
-    title: "Rmxzy",
+    title: "rmxzy",
     card: "summary_large_image",
   },
   icons: {
-    shortcut: "/favicon_new.png",
-    icon: [
-      { url: "/favicon_new.png" },
-      { url: "/favicon_new.png", sizes: "32x32", type: "image/png" },
-    ],
-    apple: [
-      { url: "/favicon_new.png" },
-      { url: "/favicon_new.png", sizes: "180x180", type: "image/png" },
-    ],
-    other: [
-      {
-        rel: "icon",
-        type: "image/png",
-        sizes: "32x32",
-        url: "/favicon_new.png",
-      },
-    ],
+    shortcut: "/favicon.png",
   },
 };
 const inter = Inter({
@@ -80,8 +64,6 @@ export default function RootLayout({
     <html lang="en" className={[inter.variable, calSans.variable].join(" ")}>
       <head>
         <Analytics />
-        <link rel="icon" href="/favicon_new.png" type="image/png" />
-        <link rel="shortcut icon" href="/favicon_new.png" type="image/png" />
       </head>
       <body
         className={`bg-black ${process.env.NODE_ENV === "development" ? "debug-screens" : undefined
