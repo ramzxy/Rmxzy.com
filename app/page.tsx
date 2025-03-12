@@ -19,9 +19,9 @@ export default function Home() {
     animationCharacterSpacing: 1,
     animationDelay: 4500,
     animationDirection: "down",
-    animationInterval: 40,
+    animationInterval: 20,
     animationLoop: true,
-    animationSpeed: 50,
+    animationSpeed: 40,
     font: ansiShadow,
     text: ["R M X Z Y"],
   }) as RefObject<HTMLPreElement>;
@@ -68,7 +68,8 @@ export default function Home() {
         <pre 
           ref={mobileAsciiTextRef}
           className="py-2 px-0.5 z-20 text-transparent bg-white cursor-default text-edge-outline font-mono text-[10px] whitespace-pre bg-clip-text text-center transform scale-90"
-          style={{              textShadow: `
+          style={{              
+            textShadow: `
             0 0 5px rgba(255, 255, 255, 0.4),
             0 0 10px rgba(255, 255, 255, 0.3),
             0 0 15px rgba(255, 255, 255, 0.3),
