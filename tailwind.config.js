@@ -38,6 +38,7 @@ module.exports = {
 			},
 			animation: {
 				"fade-in": "fade-in 3s ease-in-out forwards",
+				"fade-in-fast": "fade-in-fast 3s ease-in-out forwards",
 				title: "title 3s ease-out forwards",
 				"fade-left": "fade-left 3s ease-in-out forwards",
 				"fade-right": "fade-right 3s ease-in-out forwards",
@@ -48,6 +49,17 @@ module.exports = {
 						opacity: "0%",
 					},
 					"75%": {
+						opacity: "0%",
+					},
+					"100%": {
+						opacity: "100%",
+					},
+				},
+				"fade-in-fast": {
+					"0%": {
+						opacity: "0%",
+					},
+					"30%": {
 						opacity: "0%",
 					},
 					"100%": {

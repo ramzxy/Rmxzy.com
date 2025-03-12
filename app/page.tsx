@@ -3,7 +3,7 @@
 import Link from "next/link";
 import React, { useEffect, useState, RefObject } from "react";
 import Particles from "./components/particles";
-import { useAsciiText, bloody, alligator } from "react-ascii-text";
+import { useAsciiText, bloody, alligator, ansiShadow } from "react-ascii-text";
 
 const navigation = [
   { name: "Contact", href: "/contact" },
@@ -22,7 +22,7 @@ export default function Home() {
     animationInterval: 40,
     animationLoop: true,
     animationSpeed: 50,
-    font: bloody,
+    font: ansiShadow,
     text: ["R M X Z Y"],
   }) as RefObject<HTMLPreElement>;
   
@@ -33,8 +33,8 @@ export default function Home() {
     animationDirection: "down",
     animationInterval: 20,
     animationLoop: true,
-    animationSpeed: 37,
-    font: bloody,
+    animationSpeed: 50,
+    font: ansiShadow,
     text: ["R M X Z Y"],
   }) as RefObject<HTMLPreElement>;
 
@@ -45,7 +45,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col items-center justify-center w-screen h-screen overflow-hidden relative">
-      <nav className="my-10 animate-fade-in relative z-50">
+      <nav className="my-10 animate-fade-in-fast relative z-50">
         <ul className="flex items-center justify-center gap-8">
           {navigation.map((item) => (
             <Link
@@ -58,9 +58,8 @@ export default function Home() {
           ))}
         </ul>
       </nav>
-      <div className="hidden w-screen h-px animate-glow md:block animate-fade-left bg-gradient-to-r from-zinc-300/0 via-zinc-300/50 to-zinc-300/0" />
       <Particles
-        className="absolute inset-0 z-10 animate-fade-in pointer-events-none"
+        className="absolute inset-0 z-10 animate-fade-in-fast pointer-events-none"
         quantity={100}
       />
       
@@ -80,24 +79,31 @@ export default function Home() {
       </div>
       
       {/* Desktop version (hidden on smaller screens) */}
-      <div className="hidden md:block">
-        <pre 
-          ref={desktopAsciiTextRef}
-          className="py-4 px-1 z-20 text-transparent duration-1000 bg-white cursor-default text-edge-outline animate-title font-Courier New text-sm lg:text-base whitespace-pre bg-clip-text"
-          style={{
-            textShadow: `
-              0 0 5px rgba(255, 255, 255, 0.5),
-              0 0 10px rgba(255, 255, 255, 0.4),
-              0 0 15px rgba(255, 255, 255, 0.3),
-              0 0 20px rgba(150, 150, 255, 0.2)
-            `,
-            filter: 'brightness(1) contrast(1.05)'
-          }}
-        ></pre>
+      <div className="hidden md:block w-auto overflow-hidden">
+        <div className="flex justify-center items-center">
+          <pre 
+            ref={desktopAsciiTextRef}
+            className="py-4 px-1 z-20 text-transparent bg-white cursor-default text-edge-outline font-['Courier'] text-sm lg:text-base whitespace-pre bg-clip-text"
+            style={{
+              textShadow: `
+                0 0 5px rgba(255, 255, 255, 0.4),
+                0 0 10px rgba(255, 255, 255, 0.3),
+                0 0 15px rgba(255, 255, 255, 0.3),
+                0 0 20px rgba(150, 150, 255, 0.2)
+              `,
+              filter: 'brightness(1.05) contrast(1.05)',
+              fontFamily: 'monospace',
+              letterSpacing: '0',
+              lineHeight: '1',
+              fontStretch: 'normal',
+              fontVariantNumeric: 'tabular-nums',
+              fontFeatureSettings: '"calt" 0, "liga" 0'
+            }}
+          ></pre>
+        </div>
       </div>
 
-      <div className="hidden w-screen h-px animate-glow md:block animate-fade-right bg-gradient-to-r from-zinc-300/0 via-zinc-300/50 to-zinc-300/0" />
-      <div className="my-10 text-center animate-fade-in relative z-50">
+      <div className="my-10 text-center animate-fade-in-fast relative z-50">
         <h2 className="text-xs text-zinc-500">
           Today im working on {" "}
           <Link
