@@ -58,10 +58,10 @@ export default function Example() {
 			<Navigation />
 			<div className="container flex flex-col items-center justify-center min-h-screen px-4 mx-auto">
 				{/* ASCII text header */}
-				<div className="transform scale-50 sm:scale-75 md:scale-90">
+				<div className="w-full max-w-[200px] sm:max-w-[300px] md:max-w-[400px] overflow-hidden">
 					<pre 
 						ref={asciiTextRef}
-						className="py-2 px-0.5 z-20 text-transparent bg-white cursor-default text-edge-outline font-Courier New text-3xs sm:text-2xs md:text-xs whitespace-pre bg-clip-text mb-0"
+						className="py-2 px-0.5 z-20 text-transparent bg-white cursor-default text-edge-outline font-Courier New text-[0.4rem] sm:text-[0.6rem] md:text-xs whitespace-pre bg-clip-text mb-0 transform scale-[0.35] sm:scale-[0.5] md:scale-[0.7] origin-top"
 						style={{
 							textShadow: `
 								0 0 5px rgba(255, 255, 255, 0.5),
