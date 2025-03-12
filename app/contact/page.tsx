@@ -58,21 +58,23 @@ export default function Example() {
 			<Navigation />
 			<div className="container flex flex-col items-center justify-center min-h-screen px-4 mx-auto">
 				{/* ASCII text header */}
-				<pre 
-					ref={asciiTextRef}
-					className="py-2 px-0.5 z-20 text-transparent bg-white cursor-default text-edge-outline font-Courier New text-2xs sm:text-xs md:text-sm whitespace-pre bg-clip-text mb-12 scale-75 md:scale-90"
-					style={{
-						textShadow: `
-							0 0 5px rgba(255, 255, 255, 0.5),
-							0 0 10px rgba(255, 255, 255, 0.4),
-							0 0 15px rgba(255, 255, 255, 0.3),
-							0 0 20px rgba(150, 150, 255, 0.2)
-						`,
-						filter: 'brightness(1) contrast(1.05)'
-					}}
-				></pre>
+				<div className="transform scale-50 sm:scale-75 md:scale-90">
+					<pre 
+						ref={asciiTextRef}
+						className="py-2 px-0.5 z-20 text-transparent bg-white cursor-default text-edge-outline font-Courier New text-3xs sm:text-2xs md:text-xs whitespace-pre bg-clip-text mb-0"
+						style={{
+							textShadow: `
+								0 0 5px rgba(255, 255, 255, 0.5),
+								0 0 10px rgba(255, 255, 255, 0.4),
+								0 0 15px rgba(255, 255, 255, 0.3),
+								0 0 20px rgba(150, 150, 255, 0.2)
+							`,
+							filter: 'brightness(1) contrast(1.05)'
+						}}
+					></pre>
+				</div>
 				
-				<div className="grid w-full grid-cols-1 gap-8 mx-auto sm:grid-cols-3 lg:gap-16 z-20">
+				<div className="grid w-full grid-cols-1 gap-8 mx-auto mt-8 sm:grid-cols-3 lg:gap-16 z-20">
 					{socials.map((s) => (
 						<Card key={s.label}>
 							<Link
