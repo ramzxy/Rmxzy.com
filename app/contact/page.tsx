@@ -3,6 +3,9 @@ import { Github, Mail, Twitter, Linkedin } from "lucide-react";
 import Link from "next/link";
 import { Navigation } from "../components/nav";
 import { Card } from "../components/card";
+import Particles from "../components/particles";
+import React, { useEffect, useState, RefObject } from "react";
+import { useAsciiText, bloody } from "react-ascii-text";
 
 const socials = [
 	{
@@ -26,13 +29,52 @@ const socials = [
 ];
 
 export default function Example() {
+	const [mounted, setMounted] = useState(false);
+  
+	// Initialize the ASCII text with the useAsciiText hook
+	const asciiTextRef = useAsciiText({
+		animationCharacters: "▒░█",
+		animationCharacterSpacing: 1,
+		animationDelay: 4500,
+		animationDirection: "down",
+		animationInterval: 20,
+		animationLoop: true,
+		animationSpeed: 37,
+		font: bloody,
+		text: ["C O N T A C T"],
+	}) as RefObject<HTMLPreElement>;
+
+	// Handle client-side rendering
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
 	return (
-		<div className="bg-gradient-to-tl from-zinc-900/0 via-zinc-900 to-zinc-900/0">
+		<div className="relative min-h-screen overflow-hidden bg-gradient-to-tl from-zinc-900/0 via-zinc-900 to-zinc-900/0">
+			<Particles
+				className="absolute inset-0 z-10 pointer-events-none"
+				quantity={100}
+			/>
 			<Navigation />
-			<div className="container flex items-center justify-center min-h-screen px-4 mx-auto">
-				<div className="grid w-full grid-cols-1 gap-8 mx-auto mt-32 sm:mt-0 sm:grid-cols-3 lg:gap-16">
+			<div className="container flex flex-col items-center justify-center min-h-screen px-4 mx-auto">
+				{/* ASCII text header */}
+				<pre 
+					ref={asciiTextRef}
+					className="py-2 px-0.5 z-20 text-transparent bg-white cursor-default text-edge-outline font-Courier New text-2xs sm:text-xs md:text-sm whitespace-pre bg-clip-text mb-12 scale-75 md:scale-90"
+					style={{
+						textShadow: `
+							0 0 5px rgba(255, 255, 255, 0.5),
+							0 0 10px rgba(255, 255, 255, 0.4),
+							0 0 15px rgba(255, 255, 255, 0.3),
+							0 0 20px rgba(150, 150, 255, 0.2)
+						`,
+						filter: 'brightness(1) contrast(1.05)'
+					}}
+				></pre>
+				
+				<div className="grid w-full grid-cols-1 gap-8 mx-auto sm:grid-cols-3 lg:gap-16 z-20">
 					{socials.map((s) => (
-						<Card>
+						<Card key={s.label}>
 							<Link
 								href={s.href}
 								target="_blank"

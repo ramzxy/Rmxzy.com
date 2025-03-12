@@ -66,10 +66,16 @@ export default function RootLayout({
         <Analytics />
       </head>
       <body
-        className={`bg-black ${process.env.NODE_ENV === "development" ? "debug-screens" : undefined
-          }`}
+        className={`bg-black bg-[url('/background.png')] bg-cover bg-fixed bg-center ${
+          process.env.NODE_ENV === "development" ? "debug-screens" : undefined
+        }`}
       >
-        {children}
+        <div className="relative z-0 min-h-screen w-full">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-lg z-0"></div>
+          <div className="relative z-10">
+            {children}
+          </div>
+        </div>
       </body>
     </html>
   );
