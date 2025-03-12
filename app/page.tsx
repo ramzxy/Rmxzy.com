@@ -19,9 +19,9 @@ export default function Home() {
     animationCharacterSpacing: 1,
     animationDelay: 4500,
     animationDirection: "down",
-    animationInterval: 40, // Increased interval to reduce lag
+    animationInterval: 40,
     animationLoop: true,
-    animationSpeed: 50, // Increased speed to reduce lag
+    animationSpeed: 50,
     font: bloody,
     text: ["R M X Z Y"],
   }) as RefObject<HTMLPreElement>;
@@ -65,10 +65,10 @@ export default function Home() {
       />
       
       {/* Mobile version (hidden on md and larger screens) */}
-      <div className="block md:hidden w-full max-w-[300px] overflow-hidden">
+      <div className="block md:hidden">
         <pre 
           ref={mobileAsciiTextRef}
-          className="py-2 px-0.5 z-20 text-transparent duration-1000 bg-white cursor-default text-edge-outline animate-title font-Courier New text-[0.6rem] whitespace-pre bg-clip-text transform scale-[0.6] origin-center"
+          className="py-2 px-0.5 z-20 text-transparent bg-white cursor-default text-edge-outline font-mono text-[10px] whitespace-pre bg-clip-text text-center transform scale-90"
           style={{
             textShadow: `
               0 0 5px rgba(255, 255, 255, 0.5),
@@ -98,7 +98,7 @@ export default function Home() {
 
       <div className="hidden w-screen h-px animate-glow md:block animate-fade-right bg-gradient-to-r from-zinc-300/0 via-zinc-300/50 to-zinc-300/0" />
       <div className="my-10 text-center animate-fade-in relative z-50">
-        <h2 className="text-sm text-zinc-500">
+        <h2 className="text-xs text-zinc-500">
           Today im working on {" "}
           <Link
             target="_blank"
