@@ -4,8 +4,7 @@ import Link from "next/link";
 import { Navigation } from "../components/nav";
 import { Card } from "../components/card";
 import Particles from "../components/particles";
-import React, { useEffect, useState, RefObject } from "react";
-import { useAsciiText, bloody } from "react-ascii-text";
+import React from "react";
 
 const socials = [
 	{
@@ -29,26 +28,6 @@ const socials = [
 ];
 
 export default function Example() {
-	const [mounted, setMounted] = useState(false);
-  
-	// Initialize the ASCII text with the useAsciiText hook
-	const asciiTextRef = useAsciiText({
-		animationCharacters: "▒░█",
-		animationCharacterSpacing: 1,
-		animationDelay: 4500,
-		animationDirection: "down",
-		animationInterval: 20,
-		animationLoop: true,
-		animationSpeed: 37,
-		font: bloody,
-		text: ["C O N T A C T"],
-	}) as RefObject<HTMLPreElement>;
-
-	// Handle client-side rendering
-	useEffect(() => {
-		setMounted(true);
-	}, []);
-
 	return (
 		<div className="relative min-h-screen overflow-hidden bg-gradient-to-tl from-zinc-900/0 via-zinc-900 to-zinc-900/0">
 			<Particles
@@ -57,24 +36,7 @@ export default function Example() {
 			/>
 			<Navigation />
 			<div className="container flex flex-col items-center justify-center min-h-screen px-4 mx-auto">
-				{/* ASCII text header */}
-				<div className="w-full max-w-[200px] sm:max-w-[300px] md:max-w-[400px] overflow-hidden">
-					<pre 
-						ref={asciiTextRef}
-						className="py-2 px-0.5 z-20 text-transparent bg-white cursor-default text-edge-outline font-Courier New text-[0.4rem] sm:text-[0.6rem] md:text-xs whitespace-pre bg-clip-text mb-0 transform scale-[0.35] sm:scale-[0.5] md:scale-[0.7] origin-top"
-						style={{
-							textShadow: `
-								0 0 5px rgba(255, 255, 255, 0.5),
-								0 0 10px rgba(255, 255, 255, 0.4),
-								0 0 15px rgba(255, 255, 255, 0.3),
-								0 0 20px rgba(150, 150, 255, 0.2)
-							`,
-							filter: 'brightness(1) contrast(1.05)'
-						}}
-					></pre>
-				</div>
-				
-				<div className="grid w-full grid-cols-1 gap-8 mx-auto mt-8 sm:grid-cols-3 lg:gap-16 z-20">
+				<div className="grid w-full grid-cols-1 gap-8 mx-auto sm:grid-cols-3 lg:gap-16 z-20">
 					{socials.map((s) => (
 						<Card key={s.label}>
 							<Link
