@@ -14,7 +14,7 @@ interface ParticlesProps {
 export default function Particles({
 	className = "",
 	quantity = 30,
-	staticity = 50,
+	staticity = 40,
 	ease = 50,
 	refresh = false,
 }: ParticlesProps) {
@@ -98,12 +98,17 @@ export default function Particles({
 		const y = Math.floor(Math.random() * canvasSize.current.h);
 		const translateX = 0;
 		const translateY = 0;
-		const size = Math.floor(Math.random() * 2) + 0.6;
+		
+		const screenSize = Math.max(canvasSize.current.w, canvasSize.current.h);
+		const baseSize = Math.floor(Math.random() * 1.5) + 0.2;
+		const sizeMultiplier = Math.min(1.5, Math.max(0.7, screenSize / 2000));
+		const size = Math.min(2, Math.max(0.8, baseSize * sizeMultiplier));
+		
 		const alpha = 0;
 		const targetAlpha = parseFloat((Math.random() * 0.6 + 0.1).toFixed(1));
 		const dx = (Math.random() - 0.5) * 0.2;
 		const dy = (Math.random() - 0.5) * 0.2;
-		const magnetism = 0.1 + Math.random() * 4;
+		const magnetism = 0.1 + Math.random() * 3;
 		return {
 			x,
 			y,
