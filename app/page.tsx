@@ -17,7 +17,7 @@ export default function Home() {
   const mobileAsciiTextRef = useAsciiText({
     animationCharacters: "▒░█",
     animationCharacterSpacing: 1,
-    animationDelay: 4500,
+    animationDelay: 5500,
     animationDirection: "down",
     animationInterval: 20,
     animationLoop: true,
@@ -29,7 +29,7 @@ export default function Home() {
   const desktopAsciiTextRef = useAsciiText({
     animationCharacters: "▒░█",
     animationCharacterSpacing: 1,
-    animationDelay: 4500,
+    animationDelay: 7500,
     animationDirection: "down",
     animationInterval: 20,
     animationLoop: true,
