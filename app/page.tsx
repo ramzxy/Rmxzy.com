@@ -60,7 +60,7 @@ export default function Home() {
       </nav>
       <Particles
         className="absolute inset-0 z-10 animate-fade-in-fast pointer-events-none"
-        quantity={100}
+        quantity={120}
       />
       
       {/* Mobile version (hidden on md and larger screens) */}
