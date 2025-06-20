@@ -119,7 +119,7 @@ export default function Home() {
             href="https://github.com/ramzxy/Cedis"
             className="underline duration-500 hover:text-zinc-300"
           >
-            Kazem
+            Cedis
           </Link> to create a better redis in C++.
         </h2>
       </div>
