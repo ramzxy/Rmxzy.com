@@ -33,7 +33,7 @@ export default function Home() {
     animationDirection: "down",
     animationInterval: 20,
     animationLoop: true,
-    animationSpeed: 50,
+    animationSpeed: 40,
     font: ansiShadow,
     text: ["R M X Z Y"],
   }) as RefObject<HTMLPreElement>;
@@ -113,14 +113,14 @@ export default function Home() {
 
       <div className="my-10 text-center animate-fade-in-fast relative z-50">
         <h2 className="text-xs text-zinc-500">
-          Today im working on {" "}
+          Currently working on {" "}
           <Link
             target="_blank"
-            href="https://github.com/ramzxy/Kazem"
+            href="https://github.com/ramzxy/Cedis"
             className="underline duration-500 hover:text-zinc-300"
           >
             Kazem
-          </Link> to create an undetected backdoor in your computer.
+          </Link> to create a better redis in C++.
         </h2>
       </div>
     </div>
