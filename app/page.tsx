@@ -8,6 +8,8 @@ import { useAsciiText, bloody, alligator, ansiShadow } from "react-ascii-text";
 const navigation = [
   { name: "Contact", href: "/contact" },
   { name: "Blog", href: "https://blog.rmxzy.com" },
+  { name: "CodeForces", href: "https://codeforces.com/profile/Rmsy0x" },
+  { name: "GoodReads", href: "https://www.goodreads.com/user/show/192390307" },
 ];
 
 export default function Home() {
