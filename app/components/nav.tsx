@@ -41,6 +41,18 @@ export const Navigation: React.FC = () => {
 						>
 							Contact
 						</Link>
+						<Link
+							href="https://codeforces.com/profile/Rmsy0x"
+							className="duration-200 text-zinc-400 hover:text-zinc-100"
+						>
+							CodeForces
+						</Link>
+						<Link
+							href="https://www.goodreads.com/user/show/192390307"
+							className="duration-200 text-zinc-400 hover:text-zinc-100"
+						>
+							GoodReads
+						</Link>
 					</div>
 
 					<Link
