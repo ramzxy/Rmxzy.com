@@ -123,13 +123,40 @@ export default function Particles({
 		};
 	};
 
+	const particleColorRef = useRef("255, 255, 255");
+
+	useEffect(() => {
+		// Function to update color based on theme
+		const updateColor = () => {
+			const theme = document.documentElement.getAttribute("data-theme");
+			// If light mode, use pure black particles for max contrast
+			// If dark mode, use white particles
+			const newColor = theme === "light" ? "0, 0, 0" : "255, 255, 255";
+			particleColorRef.current = newColor;
+		};
+
+		// Initial check
+		updateColor();
+
+        // Listen for custom theme change event
+        const handleThemeChange = () => {
+             updateColor();
+             // Force a re-init to apply changes immediately if needed, 
+             // though the animation loop will pick it up on next frame.
+             initCanvas();
+        };
+        window.addEventListener("theme-change", handleThemeChange);
+
+		return () => window.removeEventListener("theme-change", handleThemeChange);
+	}, []);
+
 	const drawCircle = (circle: Circle, update = false) => {
 		if (context.current) {
 			const { x, y, translateX, translateY, size, alpha } = circle;
 			context.current.translate(translateX, translateY);
 			context.current.beginPath();
 			context.current.arc(x, y, size, 0, 2 * Math.PI);
-			context.current.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+			context.current.fillStyle = `rgba(${particleColorRef.current}, ${alpha})`;
 			context.current.fill();
 			context.current.setTransform(dpr, 0, 0, dpr, 0, 0);
 

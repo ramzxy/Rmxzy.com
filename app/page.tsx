@@ -1,130 +1,428 @@
 "use client";
 
+import { useEffect, useState, RefObject } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useAsciiText, ansiShadow } from "react-ascii-text";
 import Link from "next/link";
-import React, { useEffect, useState, RefObject } from "react";
-import Particles from "./components/particles";
-import { useAsciiText, bloody, alligator, ansiShadow } from "react-ascii-text";
+import { ArrowDown, MapPin, Clock, Menu, X } from "lucide-react";
 
+import Particles from "./components/particles";
+import { CustomCursor } from "./components/custom-cursor";
+import { TerminalText } from "./components/terminal-text";
+import { ProjectCard } from "./components/project-card";
+import { SocialDock } from "./components/social-dock";
+import { SectionHeader } from "./components/section-header";
+import { ThemeToggle } from "./components/theme-toggle";
+import { projects } from "./data/projects";
+
+// Navigation items with numbered prefixes
 const navigation = [
-  { name: "Contact", href: "/contact" },
-  { name: "Blog", href: "https://blog.rmxzy.com" },
-  { name: "CodeForces", href: "https://codeforces.com/profile/Rmsy0x" },
-  { name: "GoodReads", href: "https://www.goodreads.com/user/show/192390307" },
+  { index: "01", name: "projects", href: "#projects" },
+  { index: "02", name: "about", href: "#about" },
+  { index: "03", name: "blog", href: "https://blog.rmxzy.com" },
+  { index: "04", name: "contact", href: "#connect" },
 ];
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
-  
-  // Initialize the ASCII text hooks for mobile and desktop with optimized settings
-  const mobileAsciiTextRef = useAsciiText({
+  const [currentTime, setCurrentTime] = useState("");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // ASCII text for hero
+  const asciiTextRef = useAsciiText({
     animationCharacters: "▒░█",
     animationCharacterSpacing: 1,
-    animationDelay: 5500,
+    animationDelay: 5000,
     animationDirection: "down",
     animationInterval: 20,
     animationLoop: true,
-    animationSpeed: 40,
-    font: ansiShadow,
-    text: ["R M X Z Y"],
-  }) as RefObject<HTMLPreElement>;
-  
-  const desktopAsciiTextRef = useAsciiText({
-    animationCharacters: "▒░█",
-    animationCharacterSpacing: 1,
-    animationDelay: 7500,
-    animationDirection: "down",
-    animationInterval: 20,
-    animationLoop: true,
-    animationSpeed: 40,
+    animationSpeed: 80,
     font: ansiShadow,
     text: ["R M X Z Y"],
   }) as RefObject<HTMLPreElement>;
 
-  // Handle client-side rendering
   useEffect(() => {
     setMounted(true);
+
+    // Update time every second
+    const updateTime = () => {
+      const now = new Date();
+      setCurrentTime(
+        now.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+        })
+      );
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
   }, []);
 
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-[var(--obsidian)]" />
+    );
+  }
+
   return (
-    <div className="flex flex-col items-center justify-center w-screen h-screen overflow-hidden relative">
-      <nav className="my-10 animate-fade-in-fast relative z-50">
-        <ul className="flex items-center justify-center gap-8">
-          {navigation.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="text-sm duration-500 text-zinc-400 hover:text-zinc-200"
-            >
-              {item.name}
-            </Link>
-          ))}
-        </ul>
-      </nav>
-      <Particles
-        className="absolute inset-0 z-10 animate-fade-in-fast pointer-events-none"
-        quantity={120}
-      />
-      
-      {/* Mobile version (hidden on md and larger screens) */}
-      <div className="block md:hidden">
-        <pre 
-          ref={mobileAsciiTextRef}
-          className="py-2 px-0.5 z-20 text-transparent bg-white cursor-default text-edge-outline font-mono text-[10px] whitespace-pre bg-clip-text text-center transform scale-90"
-          style={{              
-            textShadow: `
-            0 0 5px rgba(255, 255, 255, 0.4),
-            0 0 10px rgba(255, 255, 255, 0.3),
-            0 0 15px rgba(255, 255, 255, 0.3),
-            0 0 20px rgba(150, 150, 255, 0.2)
-          `,
-          filter: 'brightness(1.05) contrast(1.05)',
-          fontFamily: 'monospace',
-          letterSpacing: '0',
-          lineHeight: '1',
-          fontStretch: 'normal',
-          fontVariantNumeric: 'tabular-nums',
-          fontFeatureSettings: '"calt" 0, "liga" 0'
-          }}
-        ></pre>
-      </div>
-      
-      {/* Desktop version (hidden on smaller screens) */}
-      <div className="hidden md:block w-auto overflow-hidden">
-        <div className="flex justify-center items-center">
-          <pre 
-            ref={desktopAsciiTextRef}
-            className="py-4 px-1 z-20 text-transparent bg-white cursor-default text-edge-outline font-['Courier'] text-sm lg:text-base whitespace-pre bg-clip-text"
-            style={{
-              textShadow: `
-                0 0 5px rgba(255, 255, 255, 0.4),
-                0 0 10px rgba(255, 255, 255, 0.3),
-                0 0 15px rgba(255, 255, 255, 0.3),
-                0 0 20px rgba(150, 150, 255, 0.2)
-              `,
-              filter: 'brightness(1.05) contrast(1.05)',
-              fontFamily: 'monospace',
-              letterSpacing: '0',
-              lineHeight: '1',
-              fontStretch: 'normal',
-              fontVariantNumeric: 'tabular-nums',
-              fontFeatureSettings: '"calt" 0, "liga" 0'
-            }}
-          ></pre>
-        </div>
+    <main className="relative min-h-screen overflow-x-hidden">
+      {/* Background Particles - Fixed to cover entire screen */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <Particles
+          className="w-full h-full"
+          quantity={300}
+        />
       </div>
 
-      <div className="my-10 text-center animate-fade-in-fast relative z-50">
-        <h2 className="text-xs text-zinc-500">
-          Currently working on {" "}
-          <Link
-            target="_blank"
-            href="https://github.com/ramzxy/Cedis"
-            className="underline duration-500 hover:text-zinc-300"
+      <CustomCursor />
+
+      {/* Fixed navigation */}
+      <motion.nav
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.5 }}
+        className="fixed top-0 left-0 right-0 z-50 px-6 py-4"
+      >
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          {/* Logo */}
+          <Link href="/" className="font-mono text-sm text-[var(--text-bright)] hover:text-[var(--phosphor)] transition-colors">
+            rmxzy<span className="text-[var(--phosphor)]">_</span>
+          </Link>
+
+          {/* Nav items */}
+          <div className="hidden md:flex items-center gap-8">
+            {navigation.map((item) => (
+              <Link
+                key={item.index}
+                href={item.href}
+                className="group flex items-center gap-2 font-mono text-sm text-[var(--text-dim)] hover:text-[var(--phosphor)] transition-colors"
+              >
+                <span className="text-[var(--phosphor)] opacity-40 group-hover:opacity-100 transition-opacity">
+                  [{item.index}]
+                </span>
+                <span>{item.name}</span>
+              </Link>
+            ))}
+          </div>
+
+          {/* Theme toggle & Mobile Menu */}
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden relative z-50 p-2 text-[var(--text-bright)] hover:text-[var(--phosphor)] transition-colors"
+            >
+              {isMobileMenuOpen ? <X /> : <Menu />}
+            </button>
+          </div>
+        </div>
+      </motion.nav>
+
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="fixed inset-0 z-40 bg-[var(--obsidian)]/95 backdrop-blur-md md:hidden flex flex-col items-center justify-center gap-8"
           >
-            Cedis
-          </Link> to create a better redis in C++.
-        </h2>
-      </div>
-    </div>
+            {navigation.map((item) => (
+              <Link
+                key={item.index}
+                href={item.href}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="font-mono text-2xl text-[var(--text-bright)] hover:text-[var(--phosphor)] transition-colors flex items-center gap-4"
+              >
+                <span className="text-[var(--phosphor)] text-sm opacity-50">/{item.index}</span>
+                {item.name}
+              </Link>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ============================================ */}
+      {/* HERO SECTION */}
+      {/* ============================================ */}
+      <section className="relative min-h-screen flex flex-col items-center justify-center px-6">
+        
+        {/* Status Bar Container - Aligned with Navbar */}
+        <div className="absolute top-24 w-full max-w-4xl px-0 hidden lg:flex justify-between items-start pointer-events-none">
+            {/* Location & Time */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="flex flex-col gap-4 font-mono text-xs text-[var(--text-dim)]"
+            >
+              <div className="flex items-center gap-2">
+                <MapPin size={12} className="text-[var(--phosphor)]" />
+                <span>Netherlands</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Clock size={12} className="text-[var(--phosphor)]" />
+                <span>{currentTime}</span>
+              </div>
+            </motion.div>
+
+            {/* Available status */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="flex items-center gap-2 font-mono text-xs"
+            >
+              <span className="w-2 h-2 rounded-full bg-[var(--phosphor)] animate-pulse" />
+              <span className="text-[var(--text-dim)]">available for work</span>
+            </motion.div>
+        </div>
+
+        {/* Main ASCII name */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          className="relative z-10 flex flex-col items-center"
+        >
+          <pre
+            ref={asciiTextRef}
+            className="font-mono text-[8px] sm:text-[10px] md:text-sm lg:text-base whitespace-pre text-[var(--text-bright)] leading-none tracking-tight select-none"
+            style={{
+              textShadow: `
+                0 0 10px var(--phosphor-glow),
+                0 0 30px var(--phosphor-glow),
+                0 0 60px var(--phosphor-glow)
+              `,
+            }}
+          />
+
+          {/* Tagline with terminal effect */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
+            className="mt-8 text-center"
+          >
+            <TerminalText
+              text="hacker • fullstack • distributed systems"
+              speed={40}
+              delay={1200}
+              className="text-[var(--text-dim)] text-sm md:text-base"
+            />
+          </motion.div>
+        </motion.div>
+
+        {/* Social dock at bottom of hero */}
+        <div className="absolute bottom-24 left-1/2 -translate-x-1/2">
+          <SocialDock />
+        </div>
+
+        {/* Scroll indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6, delay: 1.5 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+        >
+          <span className="font-mono text-xs text-[var(--text-ghost)]">scroll</span>
+          <motion.div
+            animate={{ y: [0, 6, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <ArrowDown size={16} className="text-[var(--text-ghost)]" />
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* ============================================ */}
+      {/* PROJECTS SECTION */}
+      {/* ============================================ */}
+      <section id="projects" className="relative py-32 px-6">
+        <div className="max-w-5xl mx-auto">
+          <SectionHeader
+            index="01"
+            title="SELECTED WORKS"
+            subtitle="Projects I've built, from low-level systems to full-stack applications."
+            className="mb-16"
+          />
+
+          {/* Projects grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {projects.map((project, index) => (
+              <ProjectCard
+                key={project.id}
+                project={project}
+                delay={index * 0.15}
+              />
+            ))}
+          </div>
+
+          {/* View all link */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="mt-12 text-center"
+          >
+            <Link
+              href="https://github.com/ramzxy"
+              target="_blank"
+              className="inline-flex items-center gap-2 font-mono text-sm text-[var(--text-dim)] hover:text-[var(--phosphor)] transition-colors group"
+            >
+              <span>view all on github</span>
+              <span className="text-[var(--phosphor)] group-hover:translate-x-1 transition-transform">→</span>
+            </Link>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ============================================ */}
+      {/* ABOUT SECTION */}
+      {/* ============================================ */}
+      <section id="about" className="relative py-32 px-6 bg-[var(--graphite)]">
+        <div className="max-w-5xl mx-auto">
+          <SectionHeader
+            index="02"
+            title="ABOUT"
+            className="mb-16"
+          />
+
+          <div className="grid md:grid-cols-2 gap-12">
+            {/* Bio */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="space-y-6"
+            >
+              <div className="p-6 rounded-lg bg-[var(--smoke)] border border-[var(--ash)]">
+                <p className="text-[var(--text-medium)] leading-relaxed">
+                  Hey, I'm <span className="text-[var(--phosphor)]">Ilia</span> — but online I go by <span className="font-mono text-[var(--text-bright)]">rmxzy</span>.
+                </p>
+                <p className="mt-4 text-[var(--text-medium)] leading-relaxed">
+                  I'm a CS student passionate about building things that work at scale. Currently exploring distributed systems, low-level programming, and the intersection of performance and elegance.
+                </p>
+                <p className="mt-4 text-[var(--text-medium)] leading-relaxed">
+                  When I'm not coding, you'll find me on CodeForces grinding algorithms or reading about systems design.
+                </p>
+              </div>
+            </motion.div>
+
+            {/* Skills/Interests */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="space-y-6"
+            >
+              <div>
+                <h3 className="font-mono text-sm text-[var(--phosphor)] mb-4">// interests</h3>
+                <div className="flex flex-wrap gap-2">
+                  {["Distributed Systems", "Systems Programming", "Databases", "Compilers", "Networks", "Security"].map((skill) => (
+                    <span
+                      key={skill}
+                      className="font-mono text-xs px-3 py-1.5 rounded bg-[var(--smoke)] border border-[var(--ash)] text-[var(--text-dim)]"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-mono text-sm text-[var(--phosphor)] mb-4">// technologies</h3>
+                <div className="flex flex-wrap gap-2">
+                  {["C++", "Go", "Rust", "TypeScript", "Python", "React", "Node.js", "PostgreSQL", "Redis", "Docker", "Kubernetes"].map((tech) => (
+                    <span
+                      key={tech}
+                      className="font-mono text-xs px-3 py-1.5 rounded bg-[var(--smoke)] border border-[var(--ash)] text-[var(--text-dim)]"
+                    >
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Currently working on */}
+              <div className="p-4 rounded-lg border border-[var(--ash)] bg-[var(--smoke)]">
+                <h3 className="font-mono text-sm text-[var(--text-dim)] mb-2">// currently building</h3>
+                <Link
+                  href="https://github.com/ramzxy/Cedis"
+                  target="_blank"
+                  className="flex items-center gap-2 text-[var(--text-bright)] hover:text-[var(--phosphor)] transition-colors group"
+                >
+                  <span className="font-mono">Cedis</span>
+                  <span className="text-[var(--text-dim)]">—</span>
+                  <span className="text-sm text-[var(--text-medium)]">Redis clone in C++</span>
+                  <span className="text-[var(--phosphor)] opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============================================ */}
+      {/* CONNECT SECTION */}
+      {/* ============================================ */}
+      <section id="connect" className="relative py-32 px-6">
+        <div className="max-w-5xl mx-auto">
+          <SectionHeader
+            index="03"
+            title="CONNECT"
+            subtitle="Let's build something together."
+            className="mb-16"
+          />
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="flex flex-col items-center text-center"
+          >
+            <p className="text-[var(--text-medium)] max-w-md mb-8">
+              I'm always interested in hearing about new projects, collaborations, or just chatting about distributed systems and low-level programming.
+            </p>
+
+            <Link
+              href="mailto:hello@rmxzy.com"
+              className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-lg bg-[var(--graphite)] border border-[var(--ash)] font-mono text-[var(--text-bright)] transition-all duration-300 hover:border-[var(--phosphor)] hover:shadow-[0_0_30px_var(--phosphor-glow)]"
+            >
+              <span className="text-[var(--phosphor)]">$</span>
+              <span>say_hello</span>
+              <span className="text-[var(--phosphor)] group-hover:translate-x-1 transition-transform">→</span>
+            </Link>
+
+            <div className="mt-12">
+              <SocialDock />
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ============================================ */}
+      {/* FOOTER */}
+      {/* ============================================ */}
+      <footer className="py-8 px-6 border-t border-[var(--ash)]">
+        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          <span className="font-mono text-xs text-[var(--text-ghost)]">
+            © {new Date().getFullYear()} rmxzy
+          </span>
+          <span className="font-mono text-xs text-[var(--text-ghost)]">
+            crafted with<span className="text-[var(--phosphor)]"> ♥ </span>and too much coffee
+          </span>
+        </div>
+      </footer>
+    </main>
   );
 }

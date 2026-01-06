@@ -1,23 +1,179 @@
+@import url("https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&f[]=martian-mono@400,500,700&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  .text-edge-outline {
-    -webkit-text-stroke: 1px rgba(255,255,255,0.3);
-  }
-  
-  a:hover {
-    text-shadow: 0 0 3px rgba(255, 255, 255, 0.3);
-  }
-  
-  pre.animate-title {
-    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
-  }
+:root {
+  /* === TERMINAL DEPTHS === */
+  --void: #050505;
+  --obsidian: #0a0a0a;
+  --graphite: #141414;
+  --smoke: #1a1a1a;
+  --ash: #262626;
+
+  /* === SIGNAL COLORS === */
+  --phosphor: #39ff14;
+  --phosphor-dim: #2eb810;
+  --phosphor-glow: rgba(57, 255, 20, 0.15);
+  --ember: #ff6b35;
+  --ember-glow: rgba(255, 107, 53, 0.15);
+
+  /* === TEXT HIERARCHY === */
+  --text-bright: #fafafa;
+  --text-medium: #a1a1aa;
+  --text-dim: #52525b;
+  --text-ghost: #3f3f46;
+
+  /* === SPATIAL === */
+  --grain-opacity: 0.03;
+  --blur-strength: 120px;
+  --transition-smooth: cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --cursor-color: var(--phosphor);
 }
 
-/* Removing these problematic classes */
-.text-glow, .text-glow-subtle, .ascii-glow, .link-glow:hover {
-  text-shadow: none;
-} 
+/* === LIGHT THEME (INVERTED TERMINAL) === */
+[data-theme="light"] {
+  --void: #fafafa;
+  --obsidian: #f4f4f5;
+  --graphite: #e4e4e7;
+  --smoke: #d4d4d8;
+  --ash: #a1a1aa;
 
+  --phosphor: #059669;
+  --phosphor-dim: #047857;
+  --phosphor-glow: rgba(5, 150, 105, 0.12);
+
+  --text-bright: #09090b;
+  --text-medium: #3f3f46;
+  --text-dim: #71717a;
+  --text-ghost: #a1a1aa;
+
+  /* In light mode, white cursor + difference blend = black cursor */
+  --cursor-color: #ffffff;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ash) var(--obsidian);
+}
+
+body {
+  font-family: "Satoshi", -apple-system, sans-serif;
+  background-color: var(--obsidian);
+  color: var(--text-bright);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* === CUSTOM SCROLLBAR === */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--obsidian);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ash);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-dim);
+}
+
+/* === SELECTION === */
+::selection {
+  background: var(--phosphor);
+  color: var(--void);
+}
+
+/* === GRAIN OVERLAY === */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: var(--grain-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* === FONT UTILITIES === */
+.font-mono {
+  font-family: "Martian Mono", "Courier New", monospace;
+}
+
+.font-display {
+  font-family: "Satoshi", sans-serif;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+/* === GLOW EFFECTS === */
+.glow-phosphor {
+  text-shadow: 0 0 10px var(--phosphor-glow), 0 0 40px var(--phosphor-glow),
+    0 0 80px var(--phosphor-glow);
+}
+
+.glow-box-phosphor {
+  box-shadow: 0 0 0 1px var(--phosphor), 0 0 20px var(--phosphor-glow),
+    0 0 60px var(--phosphor-glow);
+}
+
+/* === LINK STYLES === */
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.3s var(--transition-smooth);
+}
+
+a:hover {
+  color: var(--phosphor);
+}
+
+/* === FOCUS STATES === */
+:focus-visible {
+  outline: 2px solid var(--phosphor);
+  outline-offset: 4px;
+}
+
+/* === CURSOR CLASSES FOR CUSTOM CURSOR === */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.cursor-none {
+  cursor: none;
+}
+
+/* === SUPPRESSED CURSOR (for custom cursor pages) === */
+.has-custom-cursor,
+.has-custom-cursor * {
+  cursor: none !important;
+}
+
+.has-custom-cursor a,
+.has-custom-cursor button,
+.has-custom-cursor [role="button"],
+.has-custom-cursor input,
+.has-custom-cursor textarea {
+  cursor: none !important;
+}

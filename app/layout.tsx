@@ -1,19 +1,22 @@
 import "../global.css";
-import { Inter } from "@next/font/google";
-import LocalFont from "@next/font/local";
 import { Metadata } from "next";
 import { Analytics } from "./components/analytics";
+import { JetBrains_Mono } from "next/font/google";
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains",
+});
 
 export const metadata: Metadata = {
   title: {
     default: "rmxzy",
     template: "%s | rmxzy.com",
   },
-  description: "Software Engineer and Hacker",
+  description: "Hacker • Fullstack • Distributed Systems",
   openGraph: {
     title: "rmxzy",
-    description:
-      "Software Engineer and Hacker",
+    description: "Hacker • Fullstack • Distributed Systems",
     url: "https://rmxzy.com",
     siteName: "rmxzy",
     images: [
@@ -45,15 +48,6 @@ export const metadata: Metadata = {
     shortcut: "/favicon.png",
   },
 };
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
-
-const calSans = LocalFont({
-  src: "../public/fonts/CalSans-SemiBold.ttf",
-  variable: "--font-calsans",
-});
 
 export default function RootLayout({
   children,
@@ -61,21 +55,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={[inter.variable, calSans.variable].join(" ")}>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <Analytics />
       </head>
       <body
-        className={`bg-black bg-[url('/background.png')] bg-cover bg-fixed bg-center ${
-          process.env.NODE_ENV === "development" ? "debug-screens" : undefined
+        className={`${jetbrainsMono.variable} ${
+          process.env.NODE_ENV === "development" ? "debug-screens" : ""
         }`}
       >
-        <div className="relative z-0 min-h-screen w-full">
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-lg z-0"></div>
-          <div className="relative z-10">
-            {children}
-          </div>
-        </div>
+        {children}
       </body>
     </html>
   );
