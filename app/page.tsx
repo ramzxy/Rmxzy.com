@@ -4,7 +4,7 @@ import { useEffect, useState, RefObject } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAsciiText, ansiShadow } from "react-ascii-text";
 import Link from "next/link";
-import { ArrowDown, MapPin, Clock, Menu, X } from "lucide-react";
+import { ArrowDown, MapPin, Clock, Menu, X, BookOpen, ArrowRight } from "lucide-react";
 
 import Particles from "./components/particles";
 import { CustomCursor } from "./components/custom-cursor";
@@ -88,7 +88,7 @@ export default function Home() {
       >
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="font-mono text-sm text-[var(--text-bright)] hover:text-[var(--phosphor)] transition-colors">
+          <Link href="/" className="font-mono text-base text-[var(--text-bright)] hover:text-[var(--phosphor)] transition-colors">
             rmxzy<span className="text-[var(--phosphor)]">_</span>
           </Link>
 
@@ -98,7 +98,7 @@ export default function Home() {
               <Link
                 key={item.index}
                 href={item.href}
-                className="group flex items-center gap-2 font-mono text-sm text-[var(--text-dim)] hover:text-[var(--phosphor)] transition-colors"
+                className="group flex items-center gap-2 font-mono text-base text-[var(--text-dim)] hover:text-[var(--phosphor)] transition-colors"
               >
                 <span className="text-[var(--phosphor)] opacity-40 group-hover:opacity-100 transition-opacity">
                   [{item.index}]
@@ -159,7 +159,7 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.3 }}
-              className="flex flex-col gap-4 font-mono text-xs text-[var(--text-dim)]"
+              className="flex flex-col gap-4 font-mono text-sm text-[var(--text-dim)]"
             >
               <div className="flex items-center gap-2">
                 <MapPin size={12} className="text-[var(--phosphor)]" />
@@ -176,7 +176,7 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.3 }}
-              className="flex items-center gap-2 font-mono text-xs"
+              className="flex items-center gap-2 font-mono text-sm"
             >
               <span className="w-2 h-2 rounded-full bg-[var(--phosphor)] animate-pulse" />
               <span className="text-[var(--text-dim)]">available for work</span>
@@ -210,10 +210,10 @@ export default function Home() {
             className="mt-8 text-center"
           >
             <TerminalText
-              text="hacker • fullstack • distributed systems"
+              text="hacker • systems engineer • fullstack"
               speed={40}
               delay={1200}
-              className="text-[var(--text-dim)] text-sm md:text-base"
+              className="text-[var(--text-dim)] text-base md:text-lg"
             />
           </motion.div>
         </motion.div>
@@ -230,7 +230,7 @@ export default function Home() {
           transition={{ duration: 0.6, delay: 1.5 }}
           className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
         >
-          <span className="font-mono text-xs text-[var(--text-ghost)]">scroll</span>
+          <span className="font-mono text-sm text-[var(--text-ghost)]">scroll</span>
           <motion.div
             animate={{ y: [0, 6, 0] }}
             transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
@@ -274,11 +274,92 @@ export default function Home() {
             <Link
               href="https://github.com/ramzxy"
               target="_blank"
-              className="inline-flex items-center gap-2 font-mono text-sm text-[var(--text-dim)] hover:text-[var(--phosphor)] transition-colors group"
+              className="inline-flex items-center gap-2 font-mono text-base text-[var(--text-dim)] hover:text-[var(--phosphor)] transition-colors group"
             >
               <span>view all on github</span>
               <span className="text-[var(--phosphor)] group-hover:translate-x-1 transition-transform">→</span>
             </Link>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ============================================ */}
+      {/* BLOG SECTION - Latest Post */}
+      {/* ============================================ */}
+      <section className="relative py-16 px-6">
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            {/* Section label */}
+            <div className="flex items-center gap-4 mb-6">
+              <span className="font-mono text-sm text-[var(--phosphor)] opacity-60">
+                // latest post
+              </span>
+              <div className="h-px flex-1 bg-gradient-to-r from-[var(--ash)] to-transparent" />
+            </div>
+
+            {/* Blog card */}
+            <Link
+              href="https://blog.rmxzy.com/2025/11/27/ilia.beer/"
+              target="_blank"
+              className="group block"
+            >
+              <div className="relative overflow-hidden rounded-lg border border-[var(--ash)] bg-[var(--graphite)] p-6 transition-all duration-500 hover:border-[var(--phosphor)] hover:shadow-[0_0_40px_var(--phosphor-glow)]">
+                <div className="flex flex-col md:flex-row md:items-center gap-4 md:gap-8">
+                  {/* Icon */}
+                  <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-[var(--smoke)] border border-[var(--ash)] flex items-center justify-center">
+                    <BookOpen size={24} className="text-[var(--phosphor)]" />
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 mb-2">
+                      <span className="font-mono text-xs text-[var(--text-ghost)]">
+                        2025-11-27
+                      </span>
+                      <span className="font-mono text-xs px-2 py-0.5 rounded bg-[var(--smoke)] border border-[var(--ash)] text-[var(--phosphor)]">
+                        Web Dev
+                      </span>
+                    </div>
+                    <h3 className="text-lg md:text-xl font-display text-[var(--text-bright)] group-hover:text-[var(--phosphor)] transition-colors duration-300 truncate">
+                      Building ilia.beer, A "Buy Me a Beer" Platform
+                    </h3>
+                    <p className="mt-1 text-sm text-[var(--text-dim)] line-clamp-1 md:line-clamp-none">
+                      PHP backend on Raspberry Pi, video compression with Google Transcoder API
+                    </p>
+                  </div>
+
+                  {/* Arrow */}
+                  <div className="flex-shrink-0 hidden md:flex items-center">
+                    <ArrowRight 
+                      size={20} 
+                      className="text-[var(--text-ghost)] group-hover:text-[var(--phosphor)] group-hover:translate-x-1 transition-all duration-300" 
+                    />
+                  </div>
+                </div>
+
+                {/* Corner accent */}
+                <div className="absolute top-0 right-0 w-16 h-16 overflow-hidden pointer-events-none">
+                  <div className="absolute top-0 right-0 w-32 h-32 -translate-x-1/2 -translate-y-1/2 rotate-45 bg-gradient-to-r from-transparent via-[var(--phosphor)] to-transparent opacity-0 group-hover:opacity-20 transition-opacity duration-500" />
+                </div>
+              </div>
+            </Link>
+
+            {/* View all link */}
+            <div className="mt-4 text-right">
+              <Link
+                href="https://blog.rmxzy.com"
+                target="_blank"
+                className="inline-flex items-center gap-2 font-mono text-sm text-[var(--text-dim)] hover:text-[var(--phosphor)] transition-colors group"
+              >
+                <span>view all posts</span>
+                <span className="text-[var(--phosphor)] group-hover:translate-x-1 transition-transform">→</span>
+              </Link>
+            </div>
           </motion.div>
         </div>
       </section>
@@ -304,10 +385,10 @@ export default function Home() {
               className="space-y-6"
             >
               <div className="p-6 rounded-lg bg-[var(--smoke)] border border-[var(--ash)]">
-                <p className="text-[var(--text-medium)] leading-relaxed">
+                <p className="text-[var(--text-medium)] text-base md:text-lg leading-relaxed">
                   Hey, I'm <span className="text-[var(--phosphor)]">Ilia</span> — but online I go by <span className="font-mono text-[var(--text-bright)]">rmxzy</span>.
                 </p>
-                <p className="mt-4 text-[var(--text-medium)] leading-relaxed">
+                <p className="mt-4 text-[var(--text-medium)] text-base md:text-lg leading-relaxed">
                   I'm a CS student passionate about building things that work at scale. Currently exploring distributed systems, low-level programming, and the intersection of performance and elegance.
                 </p>
                 <p className="mt-4 text-[var(--text-medium)] leading-relaxed">
@@ -325,12 +406,12 @@ export default function Home() {
               className="space-y-6"
             >
               <div>
-                <h3 className="font-mono text-sm text-[var(--phosphor)] mb-4">// interests</h3>
+                <h3 className="font-mono text-base text-[var(--phosphor)] mb-4">// interests</h3>
                 <div className="flex flex-wrap gap-2">
                   {["Distributed Systems", "Systems Programming", "Databases", "Compilers", "Networks", "Security"].map((skill) => (
                     <span
                       key={skill}
-                      className="font-mono text-xs px-3 py-1.5 rounded bg-[var(--smoke)] border border-[var(--ash)] text-[var(--text-dim)]"
+                      className="font-mono text-sm px-3 py-1.5 rounded bg-[var(--smoke)] border border-[var(--ash)] text-[var(--text-dim)]"
                     >
                       {skill}
                     </span>
@@ -339,7 +420,7 @@ export default function Home() {
               </div>
 
               <div>
-                <h3 className="font-mono text-sm text-[var(--phosphor)] mb-4">// technologies</h3>
+                <h3 className="font-mono text-base text-[var(--phosphor)] mb-4">// technologies</h3>
                 <div className="flex flex-wrap gap-2">
                   {["C++", "Go", "Rust", "TypeScript", "Python", "React", "Node.js", "PostgreSQL", "Redis", "Docker", "Kubernetes"].map((tech) => (
                     <span
@@ -354,7 +435,7 @@ export default function Home() {
 
               {/* Currently working on */}
               <div className="p-4 rounded-lg border border-[var(--ash)] bg-[var(--smoke)]">
-                <h3 className="font-mono text-sm text-[var(--text-dim)] mb-2">// currently building</h3>
+                <h3 className="font-mono text-base text-[var(--text-dim)] mb-2">// currently building</h3>
                 <Link
                   href="https://github.com/ramzxy/Cedis"
                   target="_blank"
@@ -362,7 +443,7 @@ export default function Home() {
                 >
                   <span className="font-mono">Cedis</span>
                   <span className="text-[var(--text-dim)]">—</span>
-                  <span className="text-sm text-[var(--text-medium)]">Redis clone in C++</span>
+                  <span className="text-base text-[var(--text-medium)]">Redis clone in C++</span>
                   <span className="text-[var(--phosphor)] opacity-0 group-hover:opacity-100 transition-opacity">→</span>
                 </Link>
               </div>
@@ -390,12 +471,12 @@ export default function Home() {
             transition={{ duration: 0.6 }}
             className="flex flex-col items-center text-center"
           >
-            <p className="text-[var(--text-medium)] max-w-md mb-8">
+            <p className="text-[var(--text-medium)] text-base md:text-lg max-w-md mb-8">
               I'm always interested in hearing about new projects, collaborations, or just chatting about distributed systems and low-level programming.
             </p>
 
             <Link
-              href="mailto:hello@rmxzy.com"
+              href="mailto:me@rmxzy.com"
               className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-lg bg-[var(--graphite)] border border-[var(--ash)] font-mono text-[var(--text-bright)] transition-all duration-300 hover:border-[var(--phosphor)] hover:shadow-[0_0_30px_var(--phosphor-glow)]"
             >
               <span className="text-[var(--phosphor)]">$</span>
@@ -415,10 +496,10 @@ export default function Home() {
       {/* ============================================ */}
       <footer className="py-8 px-6 border-t border-[var(--ash)]">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <span className="font-mono text-xs text-[var(--text-ghost)]">
+          <span className="font-mono text-sm text-[var(--text-ghost)]">
             © {new Date().getFullYear()} rmxzy
           </span>
-          <span className="font-mono text-xs text-[var(--text-ghost)]">
+          <span className="font-mono text-sm text-[var(--text-ghost)]">
             crafted with<span className="text-[var(--phosphor)]"> ♥ </span>and too much coffee
           </span>
         </div>

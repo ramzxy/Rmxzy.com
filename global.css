@@ -42,9 +42,9 @@
   --smoke: #d4d4d8;
   --ash: #a1a1aa;
 
-  --phosphor: #059669;
-  --phosphor-dim: #047857;
-  --phosphor-glow: rgba(5, 150, 105, 0.12);
+  --phosphor: #047857;
+  --phosphor-dim: #065f46;
+  --phosphor-glow: rgba(4, 120, 87, 0.25);
 
   --text-bright: #09090b;
   --text-medium: #3f3f46;
