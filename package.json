@@ -12,6 +12,7 @@
     "@next/font": "^13.5.4",
     "@upstash/redis": "^1.23.3",
     "framer-motion": "^10.16.4",
+    "geist": "^1.7.0",
     "lucide-react": "^0.284.0",
     "next": "^13.5.4",
     "react": "^18.2.0",

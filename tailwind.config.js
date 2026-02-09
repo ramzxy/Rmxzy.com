@@ -7,8 +7,13 @@ module.exports = {
     extend: {
       fontFamily: {
         sans: ["Satoshi", ...defaultTheme.fontFamily.sans],
-        mono: ["var(--font-jetbrains)", "monospace"],
-        display: ["var(--font-jetbrains)", ...defaultTheme.fontFamily.sans],
+        mono: ["var(--font-geist-pixel-square)", "monospace"],
+        display: ["var(--font-geist-pixel-square)", ...defaultTheme.fontFamily.sans],
+        "pixel-square": ["var(--font-geist-pixel-square)", "monospace"],
+        "pixel-grid": ["var(--font-geist-pixel-grid)", "monospace"],
+        "pixel-circle": ["var(--font-geist-pixel-circle)", "monospace"],
+        "pixel-triangle": ["var(--font-geist-pixel-triangle)", "monospace"],
+        "pixel-line": ["var(--font-geist-pixel-line)", "monospace"],
       },
       backgroundImage: {
         "gradient-radial":

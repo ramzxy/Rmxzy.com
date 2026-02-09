@@ -1,12 +1,13 @@
 import "../global.css";
 import { Metadata } from "next";
 import { Analytics } from "./components/analytics";
-import { JetBrains_Mono } from "next/font/google";
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-jetbrains",
-});
+import {
+  GeistPixelSquare,
+  GeistPixelGrid,
+  GeistPixelCircle,
+  GeistPixelTriangle,
+  GeistPixelLine,
+} from "geist/font/pixel";
 
 export const metadata: Metadata = {
   title: {
@@ -60,7 +61,7 @@ export default function RootLayout({
         <Analytics />
       </head>
       <body
-        className={`${jetbrainsMono.variable} ${
+        className={`${GeistPixelSquare.variable} ${GeistPixelGrid.variable} ${GeistPixelCircle.variable} ${GeistPixelTriangle.variable} ${GeistPixelLine.variable} ${
           process.env.NODE_ENV === "development" ? "debug-screens" : ""
         }`}
       >

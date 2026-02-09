@@ -73,7 +73,7 @@ export default function Home() {
       <div className="fixed inset-0 z-0 pointer-events-none">
         <Particles
           className="w-full h-full"
-          quantity={300}
+          quantity={500}
         />
       </div>
 
@@ -192,8 +192,9 @@ export default function Home() {
         >
           <pre
             ref={asciiTextRef}
-            className="font-mono text-[8px] sm:text-[10px] md:text-sm lg:text-base whitespace-pre text-[var(--text-bright)] leading-none tracking-tight select-none"
+            className="text-[8px] sm:text-[10px] md:text-sm lg:text-base whitespace-pre text-[var(--text-bright)] leading-none tracking-tight select-none"
             style={{
+              fontFamily: '"Martian Mono", "Courier New", monospace',
               textShadow: `
                 0 0 10px var(--phosphor-glow),
                 0 0 30px var(--phosphor-glow),
