@@ -28,6 +28,7 @@ export default function Home() {
   const [currentTime, setCurrentTime] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showLinuxToast, setShowLinuxToast] = useState(false);
+  const [showFedoraToast, setShowFedoraToast] = useState(false);
 
   // ASCII text for hero
   const asciiTextRef = useAsciiText({
@@ -42,11 +43,17 @@ export default function Home() {
     text: ["R M X Z Y"],
   }) as RefObject<HTMLPreElement>;
 
-  // Detect Linux users
+  // Detect Linux/Fedora users (always show in dev)
   useEffect(() => {
     const ua = navigator.userAgent.toLowerCase();
+    const isFedora = ua.includes("fedora");
     const isLinux = ua.includes("linux") && !ua.includes("android");
-    if (isLinux) {
+    const isDev = process.env.NODE_ENV === "development";
+
+    if (isFedora || isDev) {
+      const timer = setTimeout(() => setShowFedoraToast(true), 2000);
+      return () => clearTimeout(timer);
+    } else if (isLinux) {
       const timer = setTimeout(() => setShowLinuxToast(true), 2000);
       return () => clearTimeout(timer);
     }
@@ -516,6 +523,68 @@ export default function Home() {
           </span>
         </div>
       </footer>
+
+      {/* Linux user toast */}
+      <AnimatePresence>
+        {showLinuxToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, x: 0 }}
+            animate={{ opacity: 1, y: 0, x: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed bottom-6 left-6 z-50 max-w-xs"
+          >
+            <div className="relative flex items-start gap-3 px-4 py-3 rounded-lg bg-[var(--graphite)] border border-[var(--ash)] shadow-lg">
+              <span className="font-mono text-sm text-[var(--phosphor)] shrink-0 mt-0.5">$</span>
+              <div className="flex flex-col gap-1 min-w-0">
+                <span className="font-mono text-sm text-[var(--text-medium)]">
+                  fellow linux user detected
+                </span>
+                <span className="font-mono text-xs text-[var(--text-ghost)]">
+                  ~/ uname -a
+                </span>
+              </div>
+              <button
+                onClick={() => setShowLinuxToast(false)}
+                className="shrink-0 ml-2 text-[var(--text-ghost)] hover:text-[var(--phosphor)] transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Fedora user toast */}
+      <AnimatePresence>
+        {showFedoraToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, x: 0 }}
+            animate={{ opacity: 1, y: 0, x: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="fixed bottom-6 left-6 z-50 max-w-xs"
+          >
+            <div className="relative flex items-start gap-3 px-4 py-3 rounded-lg bg-[var(--graphite)] border border-[var(--ash)] shadow-lg">
+              <span className="font-mono text-sm text-[var(--phosphor)] shrink-0 mt-0.5">$</span>
+              <div className="flex flex-col gap-1 min-w-0">
+                <span className="font-mono text-sm text-[var(--text-medium)]">
+                  fedora it is... ilia or angelos?
+                </span>
+                <span className="font-mono text-xs text-[var(--text-ghost)]">
+                  ~/ dnf install a-brain
+                </span>
+              </div>
+              <button
+                onClick={() => setShowFedoraToast(false)}
+                className="shrink-0 ml-2 text-[var(--text-ghost)] hover:text-[var(--phosphor)] transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }
