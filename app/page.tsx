@@ -27,6 +27,7 @@ export default function Home() {
   const [mounted, setMounted] = useState(false);
   const [currentTime, setCurrentTime] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showLinuxToast, setShowLinuxToast] = useState(false);
 
   // ASCII text for hero
   const asciiTextRef = useAsciiText({
@@ -40,6 +41,16 @@ export default function Home() {
     font: ansiShadow,
     text: ["R M X Z Y"],
   }) as RefObject<HTMLPreElement>;
+
+  // Detect Linux users
+  useEffect(() => {
+    const ua = navigator.userAgent.toLowerCase();
+    const isLinux = ua.includes("linux") && !ua.includes("android");
+    if (isLinux) {
+      const timer = setTimeout(() => setShowLinuxToast(true), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   useEffect(() => {
     setMounted(true);
