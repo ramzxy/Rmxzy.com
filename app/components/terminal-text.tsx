@@ -90,11 +90,15 @@ export const TerminalOutput = ({
   const [visibleLines, setVisibleLines] = useState<number[]>([]);
 
   useEffect(() => {
+    const timers: ReturnType<typeof setTimeout>[] = [];
     lines.forEach((_, index) => {
-      setTimeout(() => {
-        setVisibleLines((prev) => [...prev, index]);
-      }, index * lineDelay);
+      timers.push(
+        setTimeout(() => {
+          setVisibleLines((prev) => [...prev, index]);
+        }, index * lineDelay),
+      );
     });
+    return () => timers.forEach(clearTimeout);
   }, [lines, lineDelay]);
 
   return (

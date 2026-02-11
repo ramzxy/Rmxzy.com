@@ -54,5 +54,9 @@ module.exports = {
       },
     },
   },
-  plugins: [require("tailwindcss-debug-screens")],
+  plugins: [
+    ...(process.env.NODE_ENV === "development"
+      ? [require("tailwindcss-debug-screens")]
+      : []),
+  ],
 };

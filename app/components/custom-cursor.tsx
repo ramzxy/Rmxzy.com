@@ -27,12 +27,17 @@ export const CustomCursor = () => {
     
     if (!isPointerFine) return;
 
+    let visible = false;
     const moveCursor = (e: MouseEvent) => {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
-      setIsVisible(true);
+      if (!visible) {
+        visible = true;
+        setIsVisible(true);
+      }
     };
 
+    let lastPointerState = false;
     const handleMouseOver = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       const isClickable =
@@ -41,9 +46,13 @@ export const CustomCursor = () => {
         !!target.closest("a") ||
         !!target.closest("button") ||
         target.getAttribute("role") === "button" ||
+        target.dataset.clickable === "true" ||
         window.getComputedStyle(target).cursor === "pointer";
 
-      setIsPointer(isClickable);
+      if (isClickable !== lastPointerState) {
+        lastPointerState = isClickable;
+        setIsPointer(isClickable);
+      }
     };
 
     const handleMouseLeave = () => {

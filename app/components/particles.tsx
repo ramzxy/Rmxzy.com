@@ -85,6 +85,8 @@ const LASER_SPEED = 4;
 const LASER_LIFE = 180;
 const LASER_LENGTH = 8;
 const EDGE_MARGIN = 200;
+const MAX_LASERS = 60;
+const MAX_EXPLOSIONS = 30;
 
 // Faction colors
 const REBEL_LASER = "100, 180, 255";
@@ -101,25 +103,32 @@ export default function Particles({
 	const canvasContainerRef = useRef<HTMLDivElement>(null);
 	const context = useRef<CanvasRenderingContext2D | null>(null);
 	const circles = useRef<Circle[]>([]);
+	const circleCount = useRef(0);
 	const explosions = useRef<Explosion[]>([]);
 	const ships = useRef<Ship[]>([]);
 	const lasers = useRef<Laser[]>([]);
 	const mouse = useRef({ x: -9999, y: -9999 });
 	const canvasSize = useRef({ w: 0, h: 0 });
-	const dpr = typeof window !== "undefined" ? window.devicePixelRatio : 1;
+	const dprRef = useRef(
+		typeof window !== "undefined" ? window.devicePixelRatio : 1,
+	);
 	const particleColorRef = useRef("255, 255, 255");
+	const animIdRef = useRef(0);
 
 	// ── Canvas setup ──────────────────────────────────
 
 	const resizeCanvas = () => {
 		if (canvasContainerRef.current && canvasRef.current && context.current) {
-			circles.current.length = 0;
+			circleCount.current = 0;
 			canvasSize.current.w = canvasContainerRef.current.offsetWidth;
 			canvasSize.current.h = canvasContainerRef.current.offsetHeight;
+			dprRef.current = window.devicePixelRatio || 1;
+			const dpr = dprRef.current;
 			canvasRef.current.width = canvasSize.current.w * dpr;
 			canvasRef.current.height = canvasSize.current.h * dpr;
 			canvasRef.current.style.width = `${canvasSize.current.w}px`;
 			canvasRef.current.style.height = `${canvasSize.current.h}px`;
+			context.current.setTransform(1, 0, 0, 1, 0, 0);
 			context.current.scale(dpr, dpr);
 		}
 	};
@@ -135,18 +144,6 @@ export default function Particles({
 		}
 	};
 
-	const remapValue = (
-		value: number,
-		start1: number,
-		end1: number,
-		start2: number,
-		end2: number,
-	): number => {
-		const remapped =
-			((value - start1) * (end2 - start2)) / (end1 - start1) + start2;
-		return remapped > 0 ? remapped : 0;
-	};
-
 	// ── Particles ─────────────────────────────────────
 
 	const circleParams = (): Circle => {
@@ -156,30 +153,27 @@ export default function Particles({
 		const baseSize = Math.random() * 1.2 + 0.3;
 		const sizeMultiplier = Math.min(1.5, Math.max(0.7, screenSize / 2000));
 		const size = Math.min(2, Math.max(0.6, baseSize * sizeMultiplier));
-		const alpha = 0;
-		const targetAlpha = parseFloat((Math.random() * 0.5 + 0.2).toFixed(2));
+		const targetAlpha = Math.round((Math.random() * 0.5 + 0.2) * 100) / 100;
 		const dx = (Math.random() - 0.5) * 0.2;
 		const dy = (Math.random() - 0.5) * 0.2;
-		return { x, y, vx: 0, vy: 0, size, alpha, targetAlpha, dx, dy };
+		return { x, y, vx: 0, vy: 0, size, alpha: 0, targetAlpha, dx, dy };
 	};
 
-	const drawCircle = (circle: Circle, update = false) => {
+	const drawCircle = (circle: Circle) => {
 		if (context.current) {
 			context.current.beginPath();
 			context.current.arc(circle.x, circle.y, circle.size, 0, 2 * Math.PI);
 			context.current.fillStyle = `rgba(${particleColorRef.current}, ${circle.alpha})`;
 			context.current.fill();
-			if (!update) {
-				circles.current.push(circle);
-			}
 		}
 	};
 
-	const drawParticles = () => {
-		clearContext();
+	const initParticles = () => {
+		circleCount.current = quantity;
 		for (let i = 0; i < quantity; i++) {
-			drawCircle(circleParams());
+			circles.current[i] = circleParams();
 		}
+		circles.current.length = quantity;
 	};
 
 	// ── Ships ─────────────────────────────────────────
@@ -296,7 +290,6 @@ export default function Particles({
 			}
 
 			// ── Edge avoidance: rotate heading toward center ──
-			// How close to any edge (0 = at edge, 1 = at margin boundary)
 			const edgeL = ship.x / EDGE_MARGIN;
 			const edgeR = (w - ship.x) / EDGE_MARGIN;
 			const edgeT = ship.y / EDGE_MARGIN;
@@ -304,9 +297,8 @@ export default function Particles({
 			const edgeClosest = Math.min(edgeL, edgeR, edgeT, edgeB);
 
 			if (edgeClosest < 1) {
-				// Steer heading toward canvas center
 				const toCenterAngle = Math.atan2(cy - ship.y, cx - ship.x);
-				const urgency = Math.pow(1 - Math.max(0, edgeClosest), 2);
+				const urgency = (1 - Math.max(0, edgeClosest)) ** 2;
 				ship.angle = steerAngleToward(
 					ship.angle,
 					toCenterAngle,
@@ -363,7 +355,7 @@ export default function Particles({
 
 			// ── Shoot at nearby enemies (don't chase them) ──
 			ship.shootCooldown--;
-			if (ship.shootCooldown <= 0) {
+			if (ship.shootCooldown <= 0 && lasers.current.length < MAX_LASERS) {
 				let nearestEnemy: Ship | null = null;
 				let nearestDist = Infinity;
 				for (const other of ships.current) {
@@ -448,69 +440,71 @@ export default function Particles({
 
 	const updateLasers = () => {
 		const { w, h } = canvasSize.current;
+		let writeIdx = 0;
 
-		for (let i = lasers.current.length - 1; i >= 0; i--) {
+		for (let i = 0; i < lasers.current.length; i++) {
 			const laser = lasers.current[i];
 			laser.x += laser.vx;
 			laser.y += laser.vy;
 			laser.life--;
 
-			if (
+			let remove =
 				laser.life <= 0 ||
 				laser.x < -20 ||
 				laser.x > w + 20 ||
 				laser.y < -20 ||
-				laser.y > h + 20
-			) {
-				lasers.current.splice(i, 1);
-				continue;
-			}
+				laser.y > h + 20;
 
 			// Collision with enemy ships
-			let hit = false;
-			for (const ship of ships.current) {
-				if (ship.faction === laser.faction) continue;
-				const dx = ship.x - laser.x;
-				const dy = ship.y - laser.y;
-				const d = Math.sqrt(dx * dx + dy * dy);
-				if (d < SHIP_SIZE * 1.2) {
-					const sparkColor =
-						laser.faction === "rebel" ? REBEL_LASER : EMPIRE_LASER;
-					const sparks: Spark[] = [];
-					for (let j = 0; j < 5; j++) {
-						const angle = Math.random() * Math.PI * 2;
-						const spd = 1 + Math.random() * 2;
-						sparks.push({
-							x: laser.x,
-							y: laser.y,
-							vx: Math.cos(angle) * spd,
-							vy: Math.sin(angle) * spd,
-							alpha: 0.6 + Math.random() * 0.3,
-							size: 0.5 + Math.random() * 0.7,
-						});
+			if (!remove) {
+				for (const ship of ships.current) {
+					if (ship.faction === laser.faction) continue;
+					const dx = ship.x - laser.x;
+					const dy = ship.y - laser.y;
+					const d = Math.sqrt(dx * dx + dy * dy);
+					if (d < SHIP_SIZE * 1.2) {
+						if (explosions.current.length < MAX_EXPLOSIONS) {
+							const sparkColor =
+								laser.faction === "rebel"
+									? REBEL_LASER
+									: EMPIRE_LASER;
+							const sparks: Spark[] = [];
+							for (let j = 0; j < 5; j++) {
+								const angle = Math.random() * Math.PI * 2;
+								const spd = 1 + Math.random() * 2;
+								sparks.push({
+									x: laser.x,
+									y: laser.y,
+									vx: Math.cos(angle) * spd,
+									vy: Math.sin(angle) * spd,
+									alpha: 0.6 + Math.random() * 0.3,
+									size: 0.5 + Math.random() * 0.7,
+								});
+							}
+							explosions.current.push({
+								x: laser.x,
+								y: laser.y,
+								radius: 1,
+								maxRadius: 10 + Math.random() * 6,
+								alpha: 0.4,
+								sparks,
+								color: sparkColor,
+							});
+						}
+
+						ship.vx += laser.vx * 0.2;
+						ship.vy += laser.vy * 0.2;
+						remove = true;
+						break;
 					}
-					explosions.current.push({
-						x: laser.x,
-						y: laser.y,
-						radius: 1,
-						maxRadius: 10 + Math.random() * 6,
-						alpha: 0.4,
-						sparks,
-						color: sparkColor,
-					});
-
-					// Nudge the hit ship
-					ship.vx += laser.vx * 0.2;
-					ship.vy += laser.vy * 0.2;
-
-					hit = true;
-					break;
 				}
 			}
-			if (hit) {
-				lasers.current.splice(i, 1);
+
+			if (!remove) {
+				lasers.current[writeIdx++] = laser;
 			}
 		}
+		lasers.current.length = writeIdx;
 	};
 
 	// ── Explosions ────────────────────────────────────
@@ -518,8 +512,9 @@ export default function Particles({
 	const drawExplosions = () => {
 		if (!context.current) return;
 		const ctx = context.current;
+		let writeIdx = 0;
 
-		for (let i = explosions.current.length - 1; i >= 0; i--) {
+		for (let i = 0; i < explosions.current.length; i++) {
 			const exp = explosions.current[i];
 			const color = exp.color || particleColorRef.current;
 
@@ -537,12 +532,14 @@ export default function Particles({
 				ctx.stroke();
 			}
 
+			let allFaded = true;
 			for (const spark of exp.sparks) {
 				if (spark.alpha > 0.01) {
 					ctx.beginPath();
 					ctx.arc(spark.x, spark.y, spark.size, 0, 2 * Math.PI);
 					ctx.fillStyle = `rgba(${color}, ${spark.alpha})`;
 					ctx.fill();
+					allFaded = false;
 				}
 				spark.x += spark.vx;
 				spark.y += spark.vy;
@@ -555,20 +552,18 @@ export default function Particles({
 			exp.radius += (exp.maxRadius - exp.radius) * 0.06;
 			exp.alpha *= 0.98;
 
-			if (
-				exp.alpha < 0.005 &&
-				exp.sparks.every((s) => s.alpha < 0.005)
-			) {
-				explosions.current.splice(i, 1);
+			if (exp.alpha >= 0.005 || !allFaded) {
+				explosions.current[writeIdx++] = exp;
 			}
 		}
+		explosions.current.length = writeIdx;
 	};
 
 	// ── Init ──────────────────────────────────────────
 
 	const initCanvas = () => {
 		resizeCanvas();
-		drawParticles();
+		initParticles();
 		initShips();
 	};
 
@@ -579,9 +574,10 @@ export default function Particles({
 		const { w, h } = canvasSize.current;
 		const mx = mouse.current.x;
 		const my = mouse.current.y;
+		const count = circleCount.current;
 
 		// Update & draw particles
-		for (let i = circles.current.length - 1; i >= 0; i--) {
+		for (let i = count - 1; i >= 0; i--) {
 			const circle = circles.current[i];
 
 			const closestEdge = Math.min(
@@ -590,9 +586,7 @@ export default function Particles({
 				circle.y - circle.size,
 				h - circle.y - circle.size,
 			);
-			const edgeFactor = parseFloat(
-				remapValue(closestEdge, 0, 20, 0, 1).toFixed(2),
-			);
+			const edgeFactor = Math.min(1, Math.max(0, closestEdge / 20));
 			if (edgeFactor > 1) {
 				circle.alpha += 0.04;
 				if (circle.alpha > circle.targetAlpha)
@@ -621,18 +615,18 @@ export default function Particles({
 				circle.y < -circle.size ||
 				circle.y > h + circle.size
 			) {
-				circles.current.splice(i, 1);
-				drawCircle(circleParams());
-			} else {
-				drawCircle(circle, true);
+				// Recycle in-place instead of splice
+				circles.current[i] = circleParams();
 			}
+
+			drawCircle(circles.current[i]);
 		}
 
 		// Update ships & lasers
 		updateShips();
 		updateLasers();
 
-		// Draw lasers
+		// Draw lasers & ships
 		if (context.current) {
 			for (const laser of lasers.current) {
 				drawLaser(context.current, laser);
@@ -654,12 +648,19 @@ export default function Particles({
 		}
 		initCanvas();
 
-		let animId = 0;
 		const tick = () => {
 			animate();
-			animId = window.requestAnimationFrame(tick);
+			animIdRef.current = window.requestAnimationFrame(tick);
 		};
 		tick();
+
+		const handleVisibility = () => {
+			if (document.hidden) {
+				window.cancelAnimationFrame(animIdRef.current);
+			} else {
+				tick();
+			}
+		};
 
 		const handleMouseMove = (e: MouseEvent) => {
 			if (canvasRef.current) {
@@ -676,7 +677,9 @@ export default function Particles({
 				const cy = e.clientY - rect.top;
 
 				// Scatter particles
-				for (const circle of circles.current) {
+				const count = circleCount.current;
+				for (let i = 0; i < count; i++) {
+					const circle = circles.current[i];
 					const edx = circle.x - cx;
 					const edy = circle.y - cy;
 					const dist = Math.sqrt(edx * edx + edy * edy);
@@ -714,38 +717,42 @@ export default function Particles({
 				}
 
 				// Explosion visual
-				const sparks: Spark[] = [];
-				for (let j = 0; j < SPARK_COUNT; j++) {
-					const angle =
-						(Math.PI * 2 * j) / SPARK_COUNT +
-						(Math.random() - 0.5) * 0.4;
-					const speed = 3 + Math.random() * 4;
-					sparks.push({
+				if (explosions.current.length < MAX_EXPLOSIONS) {
+					const sparks: Spark[] = [];
+					for (let j = 0; j < SPARK_COUNT; j++) {
+						const angle =
+							(Math.PI * 2 * j) / SPARK_COUNT +
+							(Math.random() - 0.5) * 0.4;
+						const speed = 3 + Math.random() * 4;
+						sparks.push({
+							x: cx,
+							y: cy,
+							vx: Math.cos(angle) * speed,
+							vy: Math.sin(angle) * speed,
+							alpha: 0.7 + Math.random() * 0.3,
+							size: 1 + Math.random() * 1.5,
+						});
+					}
+					explosions.current.push({
 						x: cx,
 						y: cy,
-						vx: Math.cos(angle) * speed,
-						vy: Math.sin(angle) * speed,
-						alpha: 0.7 + Math.random() * 0.3,
-						size: 1 + Math.random() * 1.5,
+						radius: 2,
+						maxRadius: 80 + Math.random() * 40,
+						alpha: 0.8,
+						sparks,
 					});
 				}
-				explosions.current.push({
-					x: cx,
-					y: cy,
-					radius: 2,
-					maxRadius: 80 + Math.random() * 40,
-					alpha: 0.8,
-					sparks,
-				});
 			}
 		};
 
+		document.addEventListener("visibilitychange", handleVisibility);
 		window.addEventListener("resize", initCanvas);
 		window.addEventListener("mousemove", handleMouseMove);
 		window.addEventListener("mousedown", handleClick);
 
 		return () => {
-			window.cancelAnimationFrame(animId);
+			window.cancelAnimationFrame(animIdRef.current);
+			document.removeEventListener("visibilitychange", handleVisibility);
 			window.removeEventListener("resize", initCanvas);
 			window.removeEventListener("mousemove", handleMouseMove);
 			window.removeEventListener("mousedown", handleClick);
