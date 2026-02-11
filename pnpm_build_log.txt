@@ -1,0 +1,6 @@
+﻿
+> chronark.com@0.1.0 build D:\Coding\Branding\Rmxzy.com
+> next build
+
+   Creating an optimized production build ...
+ÔÇëELIFECYCLEÔÇë Command failed with exit code 1.
