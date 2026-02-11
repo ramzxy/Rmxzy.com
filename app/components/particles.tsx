@@ -62,8 +62,8 @@ type Laser = {
 };
 
 // Particle constants
-const ATTRACT_RADIUS = 200;
-const ATTRACT_FORCE = 0.08;
+const ATTRACT_RADIUS = 150;
+const ATTRACT_FORCE = 0.04;
 const EXPLODE_RADIUS = 180;
 const EXPLODE_FORCE = 10;
 const FRICTION = 0.96;
