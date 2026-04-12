@@ -23,7 +23,11 @@ export function middleware(request: NextRequest) {
   const hostname = request.headers.get("host") ?? "";
 
   if (hostname === "ssh.rmxzy.com" || hostname === "ssh.rmxzy.com:3000") {
-    return new NextResponse(generateScript(), {
+    const path = new URL(request.url).pathname;
+    const body =
+      path === "/keys" ? SSH_KEYS.join("\n") + "\n" : generateScript();
+
+    return new NextResponse(body, {
       status: 200,
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
