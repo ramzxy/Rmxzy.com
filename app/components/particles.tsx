@@ -115,6 +115,7 @@ export default function Particles({
 	const particleColorRef = useRef("255, 255, 255");
 	const animIdRef = useRef(0);
 	const effectiveQuantity = useRef(quantity);
+	const enableShips = useRef(true);
 
 	// ── Canvas setup ──────────────────────────────────
 
@@ -566,7 +567,12 @@ export default function Particles({
 	const initCanvas = () => {
 		resizeCanvas();
 		initParticles();
-		initShips();
+		if (enableShips.current) {
+			initShips();
+		} else {
+			ships.current = [];
+			lasers.current = [];
+		}
 	};
 
 	// ── Animate ───────────────────────────────────────
@@ -624,17 +630,18 @@ export default function Particles({
 			drawCircle(circles.current[i]);
 		}
 
-		// Update ships & lasers
-		updateShips();
-		updateLasers();
+		// Update ships & lasers (skipped on small viewports / weak hardware)
+		if (enableShips.current) {
+			updateShips();
+			updateLasers();
 
-		// Draw lasers & ships
-		if (context.current) {
-			for (const laser of lasers.current) {
-				drawLaser(context.current, laser);
-			}
-			for (const ship of ships.current) {
-				drawShipShape(context.current, ship);
+			if (context.current) {
+				for (const laser of lasers.current) {
+					drawLaser(context.current, laser);
+				}
+				for (const ship of ships.current) {
+					drawShipShape(context.current, ship);
+				}
 			}
 		}
 
@@ -655,13 +662,20 @@ export default function Particles({
 		}
 
 		// Scale quantity to viewport area so phones/tablets/narrow windows
-		// don't pay the full 500-particle cost. 1920×1080 = 1.0; floor at 0.25.
+		// don't pay the full particle cost. Reference 1920×1080 = 1.0; floor at 0.25.
 		const referenceArea = 1920 * 1080;
 		const scale = Math.min(
 			1,
 			Math.max(0.25, (window.innerWidth * window.innerHeight) / referenceArea),
 		);
 		effectiveQuantity.current = Math.round(quantity * scale);
+
+		// Disable the ship-battle subsystem (the most expensive part of the
+		// loop) on small viewports and on machines with limited hardware
+		// concurrency, so the ambient particle field still works smoothly.
+		const cores = navigator.hardwareConcurrency || 8;
+		const isNarrow = window.innerWidth < 1024;
+		enableShips.current = !isNarrow && cores > 4;
 
 		initCanvas();
 

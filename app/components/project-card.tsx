@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { ExternalLink, Github } from "lucide-react";
+import { GlitchText } from "./glitch-text";
 
 export interface Project {
   id: string;
@@ -78,10 +79,10 @@ export const ProjectCard = ({ project, delay = 0 }: ProjectCardProps) => {
                     rel="noopener noreferrer"
                     className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
                   >
-                    {project.title}
+                    <GlitchText text={project.title} />
                   </Link>
                 ) : (
-                  project.title
+                  <GlitchText text={project.title} />
                 )}
               </h3>
             </div>

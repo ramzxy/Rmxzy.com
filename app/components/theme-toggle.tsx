@@ -19,10 +19,16 @@ export const ThemeToggle = () => {
 
   const toggleTheme = () => {
     const newTheme = theme === "dark" ? "light" : "dark";
+    // Apply the transition class briefly so colors interpolate when the data
+    // attribute swaps the CSS variables, then remove it so hover transitions
+    // remain snappy.
+    const root = document.documentElement;
+    root.classList.add("theme-transitioning");
     setTheme(newTheme);
     localStorage.setItem("theme", newTheme);
-    document.documentElement.setAttribute("data-theme", newTheme);
+    root.setAttribute("data-theme", newTheme);
     window.dispatchEvent(new CustomEvent("theme-change", { detail: newTheme }));
+    window.setTimeout(() => root.classList.remove("theme-transitioning"), 380);
   };
 
   if (!mounted) {

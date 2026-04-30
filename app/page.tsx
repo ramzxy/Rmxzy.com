@@ -15,6 +15,11 @@ import { WorkCard } from "./components/work-card";
 import { SocialDock } from "./components/social-dock";
 import { SectionHeader } from "./components/section-header";
 import { ThemeToggle } from "./components/theme-toggle";
+import { CommandPalette } from "./components/command-palette";
+import { ShortcutsOverlay } from "./components/shortcuts-overlay";
+import { ConsoleEasterEgg } from "./components/console-easter-egg";
+import { GitHubActivity } from "./components/github-activity";
+import { ScrollProgress } from "./components/scroll-progress";
 import { featuredProjects, otherProjects } from "./data/projects";
 import { work } from "./data/work";
 
@@ -31,6 +36,8 @@ export default function Home() {
   const [currentTime, setCurrentTime] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [toast, setToast] = useState<"linux" | "fedora" | null>(null);
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
 
   // ASCII text for hero
   const asciiTextRef = useAsciiText({
@@ -77,13 +84,86 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
+  // Global keyboard shortcuts. Skip when typing in inputs or when modifier
+  // keys are pressed (those are reserved for browser/OS shortcuts and the
+  // palette listener handles its own ⌘K).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+      const scrollTo = (id: string) => {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      };
+
+      switch (e.key) {
+        case "?":
+          e.preventDefault();
+          setShortcutsOpen((v) => !v);
+          break;
+        case "Escape":
+          setShortcutsOpen(false);
+          setIsMobileMenuOpen(false);
+          break;
+        case "1":
+          scrollTo("work");
+          break;
+        case "2":
+          scrollTo("projects");
+          break;
+        case "3":
+          scrollTo("about");
+          break;
+        case "4":
+          window.open("https://blog.rmxzy.com", "_blank", "noopener");
+          break;
+        case "5":
+          scrollTo("connect");
+          break;
+        case "g":
+          window.open("https://github.com/ramzxy", "_blank", "noopener");
+          break;
+        case "t": {
+          const html = document.documentElement;
+          html.classList.add("theme-transitioning");
+          const next =
+            html.getAttribute("data-theme") === "light" ? "dark" : "light";
+          html.setAttribute("data-theme", next);
+          window.dispatchEvent(new Event("theme-change"));
+          try {
+            localStorage.setItem("theme", next);
+          } catch {}
+          window.setTimeout(
+            () => html.classList.remove("theme-transitioning"),
+            380,
+          );
+          break;
+        }
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
+
   return (
     <main className="relative min-h-screen overflow-x-hidden">
+      <ConsoleEasterEgg />
+      <ScrollProgress />
+
       {/* Background Particles - Fixed to cover entire screen */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <Particles
           className="w-full h-full"
-          quantity={500}
+          quantity={300}
         />
       </div>
 
@@ -118,8 +198,17 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Theme toggle & Mobile Menu */}
-          <div className="flex items-center gap-4">
+          {/* Palette trigger, theme toggle, mobile menu */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setPaletteOpen(true)}
+              aria-label="Open command palette"
+              className="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-md border border-[var(--ash)] hover:border-[var(--phosphor)] bg-[var(--graphite)]/50 hover:bg-[var(--smoke)] transition-colors group"
+            >
+              <span className="font-mono text-xs text-[var(--text-dim)] group-hover:text-[var(--phosphor)] transition-colors">
+                ⌘K
+              </span>
+            </button>
             <ThemeToggle />
 
             {/* Mobile Menu Button */}
@@ -137,22 +226,65 @@ export default function Home() {
       <AnimatePresence>
         {isMobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-40 bg-[var(--obsidian)]/95 backdrop-blur-md md:hidden flex flex-col items-center justify-center gap-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.18 }}
+            className="fixed inset-0 z-40 bg-[var(--obsidian)]/95 backdrop-blur-md md:hidden flex flex-col"
           >
-            {navigation.map((item) => (
-              <Link
-                key={item.index}
-                href={item.href}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="font-mono text-2xl text-[var(--text-bright)] hover:text-[var(--phosphor)] transition-colors flex items-center gap-4"
-              >
-                <span className="text-[var(--phosphor)] text-sm opacity-50">/{item.index}</span>
-                {item.name}
-              </Link>
-            ))}
+            {/* Terminal header */}
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3, delay: 0.05 }}
+              className="px-6 pt-24 pb-10 font-mono text-xs text-[var(--text-dim)] flex items-center gap-2"
+            >
+              <span className="text-[var(--phosphor)]">$</span>
+              <span>ls /rmxzy</span>
+            </motion.div>
+
+            {/* Items: stagger in left-to-right with a phosphor caret on hover */}
+            <nav className="flex-1 flex flex-col gap-5 px-6">
+              {navigation.map((item, i) => (
+                <motion.div
+                  key={item.index}
+                  initial={{ x: -16, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: -16, opacity: 0 }}
+                  transition={{
+                    delay: 0.08 + i * 0.06,
+                    duration: 0.4,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
+                >
+                  <Link
+                    href={item.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="group flex items-center gap-4 font-mono text-3xl text-[var(--text-bright)] hover:text-[var(--phosphor)] transition-colors"
+                  >
+                    <span className="font-mono text-[var(--phosphor)] text-sm w-6 opacity-50 group-hover:opacity-100 transition-opacity">
+                      [{item.index}]
+                    </span>
+                    <span>{item.name}</span>
+                    <span className="text-[var(--phosphor)] opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">
+                      →
+                    </span>
+                  </Link>
+                </motion.div>
+              ))}
+            </nav>
+
+            {/* Bottom hint */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.4, delay: 0.4 }}
+              className="px-6 pb-12 font-mono text-xs text-[var(--text-ghost)]"
+            >
+              tap outside or × to close
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -181,15 +313,18 @@ export default function Home() {
               </div>
             </motion.div>
 
-            {/* Available status */}
+            {/* Status: availability + live github activity */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, delay: 0.3 }}
-              className="flex items-center gap-2 font-mono text-sm"
+              className="flex flex-col items-end gap-3 pointer-events-auto"
             >
-              <span className="w-2 h-2 rounded-full bg-[var(--phosphor)] animate-pulse" />
-              <span className="text-[var(--text-dim)]">available for work</span>
+              <div className="flex items-center gap-2 font-mono text-sm">
+                <span className="w-2 h-2 rounded-full bg-[var(--phosphor)] animate-pulse" />
+                <span className="text-[var(--text-dim)]">available for work</span>
+              </div>
+              <GitHubActivity />
             </motion.div>
         </div>
 
@@ -200,8 +335,12 @@ export default function Home() {
           transition={{ duration: 1, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
           className="relative z-10 flex flex-col items-center"
         >
+          {/* The ascii hero. Pre-render the static glyphs as the LCP element
+              so the page paints meaningful content on first frame; the
+              react-ascii-text hook then takes over and animates. */}
           <pre
             ref={asciiTextRef}
+            aria-label="rmxzy"
             className="text-[8px] sm:text-[10px] md:text-sm lg:text-base whitespace-pre text-[var(--text-bright)] leading-none tracking-tight select-none"
             style={{
               fontFamily: '"Martian Mono", "Courier New", monospace',
@@ -211,7 +350,12 @@ export default function Home() {
                 0 0 60px var(--phosphor-glow)
               `,
             }}
-          />
+          >{`██████╗ ███╗   ███╗██╗  ██╗███████╗██╗   ██╗
+██╔══██╗████╗ ████║╚██╗██╔╝╚══███╔╝╚██╗ ██╔╝
+██████╔╝██╔████╔██║ ╚███╔╝   ███╔╝  ╚████╔╝
+██╔══██╗██║╚██╔╝██║ ██╔██╗  ███╔╝    ╚██╔╝
+██║  ██║██║ ╚═╝ ██║██╔╝ ██╗███████╗   ██║
+╚═╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝   `}</pre>
 
           {/* Tagline with terminal effect */}
           <motion.div
@@ -450,10 +594,13 @@ export default function Home() {
                   Hey, I'm <span className="text-[var(--phosphor)]">Ilia</span>, online I go by <span className="font-mono text-[var(--text-bright)]">rmxzy</span>.
                 </p>
                 <p className="mt-4 text-[var(--text-medium)] text-base md:text-lg leading-relaxed">
-                  I'm a CS student passionate about building things that work at scale. Currently exploring distributed systems, low-level programming, and the intersection of performance and elegance.
+                  CS student in the Netherlands, into low-level systems and the things that make computers actually do work. C++ for the deep stuff (Redis clones, kernel-side eBPF, VPN clients, emulators), TypeScript for shipping things on the web.
                 </p>
                 <p className="mt-4 text-[var(--text-medium)] leading-relaxed">
-                  When I'm not coding, you'll find me on CodeForces grinding algorithms or reading about systems design.
+                  I founded <Link href="https://ramsy.eu" target="_blank" className="font-mono text-[var(--text-bright)] hover:text-[var(--phosphor)] transition-colors">ramsy.eu</Link>, an AI-augmented offensive security firm, and ship sites for organizations I care about.
+                </p>
+                <p className="mt-4 text-[var(--text-medium)] leading-relaxed">
+                  When I'm not coding, you'll find me on Codeforces grinding algorithms or in a terminal somewhere.
                 </p>
               </div>
             </motion.div>
@@ -469,7 +616,7 @@ export default function Home() {
               <div>
                 <h3 className="font-mono text-base text-[var(--phosphor)] mb-4">// interests</h3>
                 <div className="flex flex-wrap gap-2">
-                  {["Distributed Systems", "Systems Programming", "Databases", "Compilers", "Networks", "Security"].map((skill) => (
+                  {["Systems Programming", "Operating Systems", "Distributed Systems", "Networks", "Security", "Algorithms"].map((skill) => (
                     <span
                       key={skill}
                       className="font-mono text-xs px-3 py-1.5 rounded bg-[var(--smoke)] border border-[var(--ash)] text-[var(--text-dim)]"
@@ -483,7 +630,7 @@ export default function Home() {
               <div>
                 <h3 className="font-mono text-base text-[var(--phosphor)] mb-4">// technologies</h3>
                 <div className="flex flex-wrap gap-2">
-                  {["C++", "Go", "Rust", "TypeScript", "Python", "React", "Node.js", "PostgreSQL", "Redis", "Docker", "Kubernetes"].map((tech) => (
+                  {["C++", "TypeScript", "Python", "PHP", "Linux", "eBPF", "Bash", "React", "Next.js", "Node.js", "MySQL", "Redis"].map((tech) => (
                     <span
                       key={tech}
                       className="font-mono text-xs px-3 py-1.5 rounded bg-[var(--smoke)] border border-[var(--ash)] text-[var(--text-dim)]"
@@ -536,14 +683,28 @@ export default function Home() {
               I'm always interested in hearing about new projects, collaborations, or just chatting about distributed systems and low-level programming.
             </p>
 
-            <Link
-              href="mailto:me@rmxzy.com"
-              className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-lg bg-[var(--graphite)] border border-[var(--ash)] font-mono text-[var(--text-bright)] transition-all duration-300 hover:border-[var(--phosphor)] hover:shadow-[0_0_30px_var(--phosphor-glow)]"
-            >
-              <span className="text-[var(--phosphor)]">$</span>
-              <span>say_hello</span>
-              <span className="text-[var(--phosphor)] group-hover:translate-x-1 transition-transform">→</span>
-            </Link>
+            <div className="flex flex-col sm:flex-row items-center gap-3">
+              <Link
+                href="mailto:me@rmxzy.com"
+                className="group relative inline-flex items-center gap-3 px-8 py-4 rounded-lg bg-[var(--graphite)] border border-[var(--ash)] font-mono text-[var(--text-bright)] transition-all duration-300 hover:border-[var(--phosphor)] hover:shadow-[0_0_30px_var(--phosphor-glow)]"
+              >
+                <span className="text-[var(--phosphor)]">$</span>
+                <span>say_hello</span>
+                <span className="text-[var(--phosphor)] group-hover:translate-x-1 transition-transform">→</span>
+              </Link>
+
+              <Link
+                href="/resume.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-3 px-6 py-4 rounded-lg border border-[var(--ash)] font-mono text-[var(--text-dim)] transition-colors hover:border-[var(--phosphor)] hover:text-[var(--phosphor)]"
+              >
+                <span className="text-[var(--text-ghost)] group-hover:text-[var(--phosphor)] transition-colors">
+                  $
+                </span>
+                <span>cat resume.pdf</span>
+              </Link>
+            </div>
 
             <div className="mt-12">
               <SocialDock />
@@ -565,6 +726,17 @@ export default function Home() {
           </span>
         </div>
       </footer>
+
+      {/* Command palette + keyboard shortcuts overlay */}
+      <CommandPalette open={paletteOpen} setOpen={setPaletteOpen} />
+      <ShortcutsOverlay
+        open={shortcutsOpen}
+        setOpen={setShortcutsOpen}
+        openPalette={() => {
+          setShortcutsOpen(false);
+          setPaletteOpen(true);
+        }}
+      />
 
       <AnimatePresence>
         {toast && (

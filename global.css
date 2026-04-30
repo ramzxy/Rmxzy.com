@@ -77,6 +77,18 @@ body {
   overflow-x: hidden;
 }
 
+/* Smooth theme switch: rather than transitioning every element (expensive on
+   first paint), we paint a brief overlay class on <html> while the theme
+   variables swap. The overlay applies a short transition to the most visible
+   color/border properties; the class is removed after the transition ends so
+   normal hover/focus transitions stay snappy. */
+.theme-transitioning,
+.theme-transitioning *:not(canvas) {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-duration: 320ms;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 /* === CUSTOM SCROLLBAR === */
 ::-webkit-scrollbar {
   width: 6px;

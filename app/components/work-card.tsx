@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { Work } from "../data/work";
+import { GlitchText } from "./glitch-text";
 
 interface WorkCardProps {
   work: Work;
@@ -33,7 +34,7 @@ export const WorkCard = ({ work, delay = 0 }: WorkCardProps) => {
               </span>
             </div>
             <h3 className="text-xl sm:text-2xl md:text-3xl font-display text-[var(--text-bright)] group-hover:text-[var(--phosphor)] transition-colors duration-300 break-all">
-              {work.title}
+              <GlitchText text={work.title} />
             </h3>
           </div>
           <ArrowUpRight
