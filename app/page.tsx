@@ -10,25 +10,27 @@ import Particles from "./components/particles";
 import { CustomCursor } from "./components/custom-cursor";
 import { TerminalText } from "./components/terminal-text";
 import { ProjectCard } from "./components/project-card";
+import { CompactProjectRow } from "./components/compact-project-row";
+import { WorkCard } from "./components/work-card";
 import { SocialDock } from "./components/social-dock";
 import { SectionHeader } from "./components/section-header";
 import { ThemeToggle } from "./components/theme-toggle";
-import { projects } from "./data/projects";
+import { featuredProjects, otherProjects } from "./data/projects";
+import { work } from "./data/work";
 
 // Navigation items with numbered prefixes
 const navigation = [
-  { index: "01", name: "projects", href: "#projects" },
-  { index: "02", name: "about", href: "#about" },
-  { index: "03", name: "blog", href: "https://blog.rmxzy.com" },
-  { index: "04", name: "contact", href: "#connect" },
+  { index: "01", name: "work", href: "#work" },
+  { index: "02", name: "projects", href: "#projects" },
+  { index: "03", name: "about", href: "#about" },
+  { index: "04", name: "blog", href: "https://blog.rmxzy.com" },
+  { index: "05", name: "contact", href: "#connect" },
 ];
 
 export default function Home() {
-  const [mounted, setMounted] = useState(false);
   const [currentTime, setCurrentTime] = useState("");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [showLinuxToast, setShowLinuxToast] = useState(false);
-  const [showFedoraToast, setShowFedoraToast] = useState(false);
+  const [toast, setToast] = useState<"linux" | "fedora" | null>(null);
 
   // ASCII text for hero
   const asciiTextRef = useAsciiText({
@@ -43,25 +45,21 @@ export default function Home() {
     text: ["R M X Z Y"],
   }) as RefObject<HTMLPreElement>;
 
-  // Detect Linux/Fedora users (always show in dev)
+  // Detect Linux/Fedora users (always show fedora toast in dev)
   useEffect(() => {
     const ua = navigator.userAgent.toLowerCase();
     const isFedora = ua.includes("fedora");
     const isLinux = ua.includes("linux") && !ua.includes("android");
     const isDev = process.env.NODE_ENV === "development";
 
-    if (isFedora || isDev) {
-      const timer = setTimeout(() => setShowFedoraToast(true), 2000);
-      return () => clearTimeout(timer);
-    } else if (isLinux) {
-      const timer = setTimeout(() => setShowLinuxToast(true), 2000);
-      return () => clearTimeout(timer);
-    }
+    const variant = isFedora || isDev ? "fedora" : isLinux ? "linux" : null;
+    if (!variant) return;
+
+    const timer = setTimeout(() => setToast(variant), 2000);
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    setMounted(true);
-
     // Update time every second
     const updateTime = () => {
       const now = new Date();
@@ -78,12 +76,6 @@ export default function Home() {
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
   }, []);
-
-  if (!mounted) {
-    return (
-      <div className="min-h-screen bg-[var(--obsidian)]" />
-    );
-  }
 
   return (
     <main className="relative min-h-screen overflow-x-hidden">
@@ -168,7 +160,7 @@ export default function Home() {
       {/* ============================================ */}
       {/* HERO SECTION */}
       {/* ============================================ */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center px-6">
+      <section className="relative min-h-[92vh] flex flex-col items-center justify-center px-6">
         
         {/* Status Bar Container - Aligned with Navbar */}
         <div className="absolute top-24 w-full max-w-4xl px-0 hidden lg:flex justify-between items-start pointer-events-none">
@@ -242,45 +234,95 @@ export default function Home() {
           <SocialDock />
         </div>
 
-        {/* Scroll indicator */}
+        {/* Scroll cue: terse terminal-style "next" pointer */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6, delay: 1.5 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+          className="absolute bottom-6 left-1/2 -translate-x-1/2"
         >
-          <span className="font-mono text-sm text-[var(--text-ghost)]">scroll</span>
-          <motion.div
-            animate={{ y: [0, 6, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+          <Link
+            href="#work"
+            aria-label="Scroll to work section"
+            className="group inline-flex items-center gap-3 font-mono text-sm px-3 py-1.5 rounded border border-transparent hover:border-[var(--ash)] hover:bg-[var(--smoke)]/40 transition-colors"
           >
-            <ArrowDown size={16} className="text-[var(--text-ghost)]" />
-          </motion.div>
+            <span className="text-[var(--text-dim)] group-hover:text-[var(--phosphor)] transition-colors">
+              next
+            </span>
+            <motion.span
+              animate={{ y: [0, 3, 0] }}
+              transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+              className="text-[var(--phosphor)]"
+            >
+              ↓
+            </motion.span>
+            <span className="text-[var(--text-bright)] group-hover:text-[var(--phosphor)] transition-colors">
+              work
+            </span>
+          </Link>
         </motion.div>
+      </section>
+
+      {/* ============================================ */}
+      {/* WORK SECTION */}
+      {/* ============================================ */}
+      <section id="work" className="relative pt-32 pb-16 px-6">
+        <div className="max-w-5xl mx-auto">
+          <SectionHeader
+            index="01"
+            title="WORK"
+            subtitle="Live sites I've built and shipped for organizations."
+            className="mb-16"
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {work.map((w, i) => (
+              <WorkCard key={w.id} work={w} delay={i * 0.12} />
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* ============================================ */}
       {/* PROJECTS SECTION */}
       {/* ============================================ */}
-      <section id="projects" className="relative py-32 px-6">
+      <section id="projects" className="relative pt-12 pb-16 px-6">
         <div className="max-w-5xl mx-auto">
           <SectionHeader
-            index="01"
-            title="SELECTED WORKS"
-            subtitle="Projects I've built, from low-level systems to full-stack applications."
+            index="02"
+            title="PROJECTS"
+            subtitle="Side projects, from low-level systems to weekend hacks."
             className="mb-16"
           />
 
-          {/* Projects grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {projects.map((project, index) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                delay={index * 0.15}
-              />
+          {/* Featured projects */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+            {featuredProjects.map((project, i) => (
+              <ProjectCard key={project.id} project={project} delay={i * 0.12} />
             ))}
           </div>
+
+          {/* More projects: compact terminal-style list */}
+          {otherProjects.length > 0 && (
+            <>
+              <div className="flex items-center gap-4 mb-4">
+                <span className="font-mono text-xs text-[var(--phosphor)] opacity-60">
+                  // more
+                </span>
+                <div className="h-px flex-1 bg-gradient-to-r from-[var(--ash)] to-transparent" />
+              </div>
+
+              <div className="rounded-lg border border-[var(--ash)] bg-[var(--graphite)]/40 divide-y divide-[var(--ash)]/40 overflow-hidden">
+                {otherProjects.map((project, i) => (
+                  <CompactProjectRow
+                    key={project.id}
+                    project={project}
+                    delay={i * 0.06}
+                  />
+                ))}
+              </div>
+            </>
+          )}
 
           {/* View all link */}
           <motion.div
@@ -305,7 +347,7 @@ export default function Home() {
       {/* ============================================ */}
       {/* BLOG SECTION - Latest Post */}
       {/* ============================================ */}
-      <section className="relative py-16 px-6">
+      <section className="relative pt-8 pb-16 px-6">
         <div className="max-w-5xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -323,7 +365,7 @@ export default function Home() {
 
             {/* Blog card */}
             <Link
-              href="https://blog.rmxzy.com/2025/11/27/ilia.beer/"
+              href="https://blog.rmxzy.com/2026/01/27/chokerjoker-blog/"
               target="_blank"
               className="group block"
             >
@@ -338,17 +380,17 @@ export default function Home() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
                       <span className="font-mono text-xs text-[var(--text-ghost)]">
-                        2025-11-27
+                        2026-01-27
                       </span>
                       <span className="font-mono text-xs px-2 py-0.5 rounded bg-[var(--smoke)] border border-[var(--ash)] text-[var(--phosphor)]">
-                        Web Dev
+                        Game AI
                       </span>
                     </div>
                     <h3 className="text-lg md:text-xl font-display text-[var(--text-bright)] group-hover:text-[var(--phosphor)] transition-colors duration-300 truncate">
-                      Building ilia.beer, A "Buy Me a Beer" Platform
+                      Building ChokerJoker, the award-winning Quarto solver
                     </h3>
                     <p className="mt-1 text-sm text-[var(--text-dim)] line-clamp-1 md:line-clamp-none">
-                      PHP backend on Raspberry Pi, video compression with Google Transcoder API
+                      Java game AI with alpha-beta pruning. Search the entire tree, or run out of time
                     </p>
                   </div>
 
@@ -389,7 +431,7 @@ export default function Home() {
       <section id="about" className="relative py-32 px-6 bg-[var(--graphite)]">
         <div className="max-w-5xl mx-auto">
           <SectionHeader
-            index="02"
+            index="03"
             title="ABOUT"
             className="mb-16"
           />
@@ -405,7 +447,7 @@ export default function Home() {
             >
               <div className="p-6 rounded-lg bg-[var(--smoke)] border border-[var(--ash)]">
                 <p className="text-[var(--text-medium)] text-base md:text-lg leading-relaxed">
-                  Hey, I'm <span className="text-[var(--phosphor)]">Ilia</span> — but online I go by <span className="font-mono text-[var(--text-bright)]">rmxzy</span>.
+                  Hey, I'm <span className="text-[var(--phosphor)]">Ilia</span>, online I go by <span className="font-mono text-[var(--text-bright)]">rmxzy</span>.
                 </p>
                 <p className="mt-4 text-[var(--text-medium)] text-base md:text-lg leading-relaxed">
                   I'm a CS student passionate about building things that work at scale. Currently exploring distributed systems, low-level programming, and the intersection of performance and elegance.
@@ -430,7 +472,7 @@ export default function Home() {
                   {["Distributed Systems", "Systems Programming", "Databases", "Compilers", "Networks", "Security"].map((skill) => (
                     <span
                       key={skill}
-                      className="font-mono text-sm px-3 py-1.5 rounded bg-[var(--smoke)] border border-[var(--ash)] text-[var(--text-dim)]"
+                      className="font-mono text-xs px-3 py-1.5 rounded bg-[var(--smoke)] border border-[var(--ash)] text-[var(--text-dim)]"
                     >
                       {skill}
                     </span>
@@ -461,7 +503,7 @@ export default function Home() {
                   className="flex items-center gap-2 text-[var(--text-bright)] hover:text-[var(--phosphor)] transition-colors group"
                 >
                   <span className="font-mono">Cedis</span>
-                  <span className="text-[var(--text-dim)]">—</span>
+                  <span className="text-[var(--text-dim)]">-</span>
                   <span className="text-base text-[var(--text-medium)]">Redis clone in C++</span>
                   <span className="text-[var(--phosphor)] opacity-0 group-hover:opacity-100 transition-opacity">→</span>
                 </Link>
@@ -477,7 +519,7 @@ export default function Home() {
       <section id="connect" className="relative py-32 px-6">
         <div className="max-w-5xl mx-auto">
           <SectionHeader
-            index="03"
+            index="04"
             title="CONNECT"
             subtitle="Let's build something together."
             className="mb-16"
@@ -524,12 +566,11 @@ export default function Home() {
         </div>
       </footer>
 
-      {/* Linux user toast */}
       <AnimatePresence>
-        {showLinuxToast && (
+        {toast && (
           <motion.div
-            initial={{ opacity: 0, y: 20, x: 0 }}
-            animate={{ opacity: 1, y: 0, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             className="fixed bottom-6 left-6 z-50 max-w-xs"
@@ -538,46 +579,18 @@ export default function Home() {
               <span className="font-mono text-sm text-[var(--phosphor)] shrink-0 mt-0.5">$</span>
               <div className="flex flex-col gap-1 min-w-0">
                 <span className="font-mono text-sm text-[var(--text-medium)]">
-                  fellow linux user detected
+                  {toast === "fedora"
+                    ? "fedora it is... ilia or angelos?"
+                    : "fellow linux user detected"}
                 </span>
                 <span className="font-mono text-xs text-[var(--text-ghost)]">
-                  ~/ uname -a
+                  {toast === "fedora" ? "~/ dnf install a-brain" : "~/ uname -a"}
                 </span>
               </div>
               <button
-                onClick={() => setShowLinuxToast(false)}
+                onClick={() => setToast(null)}
                 className="shrink-0 ml-2 text-[var(--text-ghost)] hover:text-[var(--phosphor)] transition-colors"
-              >
-                <X size={14} />
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Fedora user toast */}
-      <AnimatePresence>
-        {showFedoraToast && (
-          <motion.div
-            initial={{ opacity: 0, y: 20, x: 0 }}
-            animate={{ opacity: 1, y: 0, x: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed bottom-6 left-6 z-50 max-w-xs"
-          >
-            <div className="relative flex items-start gap-3 px-4 py-3 rounded-lg bg-[var(--graphite)] border border-[var(--ash)] shadow-lg">
-              <span className="font-mono text-sm text-[var(--phosphor)] shrink-0 mt-0.5">$</span>
-              <div className="flex flex-col gap-1 min-w-0">
-                <span className="font-mono text-sm text-[var(--text-medium)]">
-                  fedora it is... ilia or angelos?
-                </span>
-                <span className="font-mono text-xs text-[var(--text-ghost)]">
-                  ~/ dnf install a-brain
-                </span>
-              </div>
-              <button
-                onClick={() => setShowFedoraToast(false)}
-                className="shrink-0 ml-2 text-[var(--text-ghost)] hover:text-[var(--phosphor)] transition-colors"
+                aria-label="Dismiss"
               >
                 <X size={14} />
               </button>

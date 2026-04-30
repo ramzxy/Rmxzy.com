@@ -114,6 +114,7 @@ export default function Particles({
 	);
 	const particleColorRef = useRef("255, 255, 255");
 	const animIdRef = useRef(0);
+	const effectiveQuantity = useRef(quantity);
 
 	// ── Canvas setup ──────────────────────────────────
 
@@ -169,11 +170,12 @@ export default function Particles({
 	};
 
 	const initParticles = () => {
-		circleCount.current = quantity;
-		for (let i = 0; i < quantity; i++) {
+		const q = effectiveQuantity.current;
+		circleCount.current = q;
+		for (let i = 0; i < q; i++) {
 			circles.current[i] = circleParams();
 		}
-		circles.current.length = quantity;
+		circles.current.length = q;
 	};
 
 	// ── Ships ─────────────────────────────────────────
@@ -231,7 +233,7 @@ export default function Particles({
 			ctx.lineWidth = 1;
 			ctx.stroke();
 		} else {
-			// TIE fighter shape — cockpit + wing struts + panels
+			// TIE fighter shape: cockpit + wing struts + panels
 			ctx.beginPath();
 			ctx.moveTo(0, -SHIP_SIZE * 0.7);
 			ctx.lineTo(0, SHIP_SIZE * 0.7);
@@ -349,7 +351,7 @@ export default function Particles({
 			ship.x += ship.vx;
 			ship.y += ship.vy;
 
-			// Hard clamp — never leave canvas
+			// Hard clamp; never leave canvas
 			ship.x = Math.max(5, Math.min(w - 5, ship.x));
 			ship.y = Math.max(5, Math.min(h - 5, ship.y));
 
@@ -646,6 +648,21 @@ export default function Particles({
 		if (canvasRef.current) {
 			context.current = canvasRef.current.getContext("2d");
 		}
+
+		// Skip the simulation entirely for users who prefer reduced motion.
+		if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+			return;
+		}
+
+		// Scale quantity to viewport area so phones/tablets/narrow windows
+		// don't pay the full 500-particle cost. 1920×1080 = 1.0; floor at 0.25.
+		const referenceArea = 1920 * 1080;
+		const scale = Math.min(
+			1,
+			Math.max(0.25, (window.innerWidth * window.innerHeight) / referenceArea),
+		);
+		effectiveQuantity.current = Math.round(quantity * scale);
+
 		initCanvas();
 
 		const tick = () => {

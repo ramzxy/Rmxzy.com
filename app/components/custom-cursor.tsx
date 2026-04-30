@@ -24,15 +24,19 @@ export const CustomCursor = () => {
   useEffect(() => {
     // Only show on desktop (devices with fine pointer)
     const isPointerFine = window.matchMedia("(pointer: fine)").matches;
-    
+
     if (!isPointerFine) return;
 
-    let visible = false;
+    let activated = false;
     const moveCursor = (e: MouseEvent) => {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
-      if (!visible) {
-        visible = true;
+      if (!activated) {
+        activated = true;
+        // Hide the native cursor only once we have a real position to render.
+        // Otherwise users who land on the page without moving the mouse see
+        // no cursor at all.
+        document.body.classList.add("has-custom-cursor");
         setIsVisible(true);
       }
     };
@@ -55,19 +59,21 @@ export const CustomCursor = () => {
       }
     };
 
-    const handleMouseLeave = () => {
-      setIsVisible(false);
+    const handleMouseLeave = () => setIsVisible(false);
+    const handleMouseEnter = () => {
+      if (activated) setIsVisible(true);
     };
 
     document.addEventListener("mousemove", moveCursor);
     document.addEventListener("mouseover", handleMouseOver);
     document.addEventListener("mouseleave", handleMouseLeave);
-    document.body.classList.add("has-custom-cursor");
+    document.addEventListener("mouseenter", handleMouseEnter);
 
     return () => {
       document.removeEventListener("mousemove", moveCursor);
       document.removeEventListener("mouseover", handleMouseOver);
       document.removeEventListener("mouseleave", handleMouseLeave);
+      document.removeEventListener("mouseenter", handleMouseEnter);
       document.body.classList.remove("has-custom-cursor");
     };
   }, [cursorX, cursorY]);
@@ -77,7 +83,7 @@ export const CustomCursor = () => {
       {/* Main cursor dot - Fast Response */}
       <motion.div
         ref={cursorRef}
-        className="fixed top-0 left-0 pointer-events-none z-[10000] mix-blend-difference hidden md:block"
+        className="fixed top-0 left-0 pointer-events-none z-[10000] mix-blend-difference"
         style={{
           x: dotX,
           y: dotY,
@@ -106,7 +112,7 @@ export const CustomCursor = () => {
 
       {/* Trailing ring - Smooth Follow */}
       <motion.div
-        className="fixed top-0 left-0 pointer-events-none z-[9999] mix-blend-difference hidden md:block"
+        className="fixed top-0 left-0 pointer-events-none z-[9999] mix-blend-difference"
         style={{
           x: ringX,
           y: ringY,

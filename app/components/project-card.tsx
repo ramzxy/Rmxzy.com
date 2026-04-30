@@ -10,10 +10,12 @@ export interface Project {
   index: number;
   title: string;
   description: string;
+  tagline?: string;
   image?: string;
   tech: string[];
   github?: string;
   demo?: string;
+  featured?: boolean;
 }
 
 interface ProjectCardProps {
@@ -23,6 +25,7 @@ interface ProjectCardProps {
 
 export const ProjectCard = ({ project, delay = 0 }: ProjectCardProps) => {
   const indexStr = String(project.index).padStart(2, "0");
+  const primaryHref = project.demo || project.github;
 
   return (
     <motion.article
@@ -49,6 +52,7 @@ export const ProjectCard = ({ project, delay = 0 }: ProjectCardProps) => {
                 src={project.image}
                 alt={project.title}
                 fill
+                sizes="(min-width: 768px) 50vw, 100vw"
                 className="object-cover opacity-80 transition-opacity duration-500 group-hover:opacity-100"
               />
             </motion.div>
@@ -57,39 +61,36 @@ export const ProjectCard = ({ project, delay = 0 }: ProjectCardProps) => {
           </div>
         )}
 
-        {/* Primary Link Overlay - Makes whole card clickable */}
-        {(project.demo || project.github) && (
-          <Link
-            href={project.demo || project.github || "#"}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="absolute inset-0 z-0"
-            aria-label={`View details for ${project.title}`}
-          />
-        )}
-
         {/* Content */}
-        <div className="relative p-6 space-y-4 pointer-events-none flex flex-col flex-1">
-          {/* Index + Title row - Pointer events auto via parent link but text selection allowed if needed, though overlay covers it. 
-              Actually overlay covers everything z-0. We need specific interactive elements to be z-10 
-          */}
+        <div className="relative p-6 space-y-4 flex flex-col flex-1">
           <div className="flex items-start gap-4">
             <span className="font-mono text-[var(--phosphor)] text-sm opacity-60">
               {indexStr}
             </span>
             <div className="flex-1">
               <h3 className="text-xl font-display text-[var(--text-bright)] group-hover:text-[var(--phosphor)] transition-colors duration-300">
-                {project.title}
+                {primaryHref ? (
+                  // The title link is stretched via ::after to make the whole
+                  // card clickable without nesting <a> elements.
+                  <Link
+                    href={primaryHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="after:absolute after:inset-0 after:content-[''] focus-visible:outline-none"
+                  >
+                    {project.title}
+                  </Link>
+                ) : (
+                  project.title
+                )}
               </h3>
             </div>
           </div>
 
-          {/* Description */}
           <p className="text-[var(--text-medium)] text-sm leading-relaxed line-clamp-3">
             {project.description}
           </p>
 
-          {/* Tech stack */}
           <div className="flex flex-wrap gap-2 mt-auto pt-4">
             {project.tech.map((tech) => (
               <span
@@ -101,15 +102,14 @@ export const ProjectCard = ({ project, delay = 0 }: ProjectCardProps) => {
             ))}
           </div>
 
-          {/* Links - Explicitly interactive elements need z-10 and pointer-events-auto */}
-          <div className="flex gap-4 pt-2 relative z-10 pointer-events-auto">
+          {/* Source/demo links sit above the stretched title link via z-10. */}
+          <div className="flex gap-4 pt-2 relative z-10">
             {project.github && (
               <Link
                 href={project.github}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-sm text-[var(--text-dim)] hover:text-[var(--phosphor)] transition-colors"
-                onClick={(e) => e.stopPropagation()}
               >
                 <Github size={16} />
                 <span className="font-mono">source</span>
@@ -121,7 +121,6 @@ export const ProjectCard = ({ project, delay = 0 }: ProjectCardProps) => {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-sm text-[var(--text-dim)] hover:text-[var(--phosphor)] transition-colors"
-                onClick={(e) => e.stopPropagation()}
               >
                 <ExternalLink size={16} />
                 <span className="font-mono">demo</span>
