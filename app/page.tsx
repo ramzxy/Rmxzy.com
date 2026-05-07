@@ -156,6 +156,9 @@ export default function Home() {
 
   return (
     <main className="relative min-h-screen overflow-x-hidden">
+      <h1 className="sr-only">
+        Ilia Mirzaali — Software Engineer & Hacker (rmxzy)
+      </h1>
       <ConsoleEasterEgg />
       <ScrollProgress />
 
@@ -591,7 +594,7 @@ export default function Home() {
             >
               <div className="p-6 rounded-lg bg-[var(--smoke)] border border-[var(--ash)]">
                 <p className="text-[var(--text-medium)] text-base md:text-lg leading-relaxed">
-                  Hey, I'm <span className="text-[var(--phosphor)]">Ilia</span>, online I go by <span className="font-mono text-[var(--text-bright)]">rmxzy</span>.
+                  Hey, I'm <span className="text-[var(--phosphor)]">Ilia Mirzaali</span>, online I go by <span className="font-mono text-[var(--text-bright)]">rmxzy</span>.
                 </p>
                 <p className="mt-4 text-[var(--text-medium)] text-base md:text-lg leading-relaxed">
                   CS student in the Netherlands, into low-level systems and the things that make computers actually do work. C++ for the deep stuff (Redis clones, kernel-side eBPF, VPN clients, emulators), TypeScript for shipping things on the web.

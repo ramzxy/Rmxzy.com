@@ -11,17 +11,40 @@ import {
 
 export const metadata: Metadata = {
   title: {
-    default: "rmxzy",
-    template: "%s | rmxzy.com",
+    default: "Ilia Mirzaali — Software Engineer & Hacker (rmxzy)",
+    template: "%s | Ilia Mirzaali (rmxzy)",
   },
-  description: "Hacker • Fullstack • Distributed Systems",
+  description:
+    "Ilia Mirzaali (rmxzy) — software engineer in the Netherlands. CS student building low-level systems in C++ (Cedis, eBPF, VPN clients, emulators) and shipping full-stack web.",
   metadataBase: new URL("https://rmxzy.com"),
+  keywords: [
+    "Ilia Mirzaali",
+    "Ilia",
+    "Mirzaali",
+    "rmxzy",
+    "ramzxy",
+    "software engineer Netherlands",
+    "distributed systems",
+    "systems programming",
+    "fullstack developer",
+    "C++ developer",
+    "eBPF",
+    "Cedis",
+    "ramsy.eu",
+  ],
+  authors: [{ name: "Ilia Mirzaali", url: "https://rmxzy.com" }],
+  creator: "Ilia Mirzaali",
+  publisher: "Ilia Mirzaali",
+  alternates: {
+    canonical: "https://rmxzy.com",
+  },
   openGraph: {
-    title: "rmxzy",
-    description: "Hacker • Fullstack • Distributed Systems",
+    title: "Ilia Mirzaali — Software Engineer & Hacker (rmxzy)",
+    description:
+      "Ilia Mirzaali (rmxzy) — software engineer working on distributed systems, low-level programming, and full-stack web.",
     url: "https://rmxzy.com",
-    siteName: "rmxzy",
-    locale: "en-US",
+    siteName: "Ilia Mirzaali — rmxzy",
+    locale: "en_US",
     type: "website",
   },
   robots: {
@@ -36,8 +59,11 @@ export const metadata: Metadata = {
     },
   },
   twitter: {
-    title: "rmxzy",
+    title: "Ilia Mirzaali — rmxzy",
+    description:
+      "Software engineer working on distributed systems, low-level programming, and full-stack web.",
     card: "summary_large_image",
+    creator: "@ramsyTheDream",
   },
   icons: {
     shortcut: "/favicon.png",
@@ -49,9 +75,12 @@ export const metadata: Metadata = {
 const personSchema = {
   "@context": "https://schema.org",
   "@type": "Person",
-  name: "Ilia",
-  alternateName: "rmxzy",
+  name: "Ilia Mirzaali",
+  alternateName: ["rmxzy", "ramzxy", "Ilia"],
+  givenName: "Ilia",
+  familyName: "Mirzaali",
   url: "https://rmxzy.com",
+  image: "https://rmxzy.com/favicon.png",
   email: "mailto:me@rmxzy.com",
   jobTitle: "Software Engineer",
   description:
@@ -67,6 +96,9 @@ const personSchema = {
   ],
   sameAs: [
     "https://github.com/ramzxy",
+    "https://x.com/ramsyTheDream",
+    "https://www.instagram.com/mirza.ilia/",
+    "https://t.me/Rmsy0x",
     "https://blog.rmxzy.com",
     "https://ramsy.eu",
   ],
@@ -74,6 +106,15 @@ const personSchema = {
     "@type": "PostalAddress",
     addressCountry: "NL",
   },
+};
+
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Ilia Mirzaali — rmxzy",
+  alternateName: "rmxzy.com",
+  url: "https://rmxzy.com",
+  author: { "@type": "Person", name: "Ilia Mirzaali" },
 };
 
 export default function RootLayout({
@@ -84,10 +125,15 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="canonical" href="https://rmxzy.com" />
         <Analytics />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
       </head>
       <body
