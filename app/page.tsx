@@ -512,7 +512,7 @@ export default function Home() {
 
             {/* Blog card */}
             <Link
-              href="https://blog.rmxzy.com/2026/01/27/chokerjoker-blog/"
+              href="https://blog.rmxzy.com/2026/01/26/chokerjoker-blog/"
               target="_blank"
               className="group block"
             >
