@@ -512,7 +512,7 @@ export default function Home() {
 
             {/* Blog card */}
             <Link
-              href="https://blog.rmxzy.com/2026/01/26/chokerjoker-blog/"
+              href="https://blog.rmxzy.com/2026/07/14/you-can-have-the-dinner/"
               target="_blank"
               className="group block"
             >
@@ -527,17 +527,17 @@ export default function Home() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
                       <span className="font-mono text-xs text-[var(--text-ghost)]">
-                        2026-01-27
+                        2026-07-14
                       </span>
                       <span className="font-mono text-xs px-2 py-0.5 rounded bg-[var(--smoke)] border border-[var(--ash)] text-[var(--phosphor)]">
-                        Game AI
+                        Security
                       </span>
                     </div>
                     <h3 className="text-lg md:text-xl font-display text-[var(--text-bright)] group-hover:text-[var(--phosphor)] transition-colors duration-300 truncate">
-                      Building ChokerJoker, the award-winning Quarto solver
+                      You Can Have the Dinner
                     </h3>
                     <p className="mt-1 text-sm text-[var(--text-dim)] line-clamp-1 md:line-clamp-none">
-                      Java game AI with alpha-beta pruning. Search the entire tree, or run out of time
+                      How a vacation challenge led to an exposed hospital imaging archive
                     </p>
                   </div>
 
