@@ -3,21 +3,127 @@
 import Image from "next/image";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 import { useAsciiText, ansiShadow } from "react-ascii-text";
-import { useEffect, useState, type CSSProperties, type RefObject } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type RefObject } from "react";
 import type { BlogPostSummary } from "../lib/blog";
 import { ScrollProgress } from "./components/scroll-progress";
 import { SiteHeader } from "./components/site-header";
 import { SocialDock } from "./components/social-dock";
 import { TerminalText } from "./components/terminal-text";
 import { featuredProjects } from "./data/projects";
-import { work } from "./data/work";
+import { work, type Work } from "./data/work";
 import styles from "./home.module.css";
 
 const Particles = dynamic(() => import("./components/particles"), { ssr: false });
 
 type HomePost = Omit<BlogPostSummary, "searchText">;
+
+const projectSignals: Record<string, { input: string; output: string }> = {
+  khor: { input: "syscalls", output: "sound" },
+  cedis: { input: "RESP bytes", output: "state" },
+  emuchip8: { input: "opcode", output: "pixels" },
+};
+
+const scrollSpring = {
+  stiffness: 110,
+  damping: 26,
+  mass: 0.45,
+  restDelta: 0.001,
+};
+
+type FeaturedProject = (typeof featuredProjects)[number];
+
+function WorkCase({ item, index }: { item: Work; index: number }) {
+  const articleRef = useRef<HTMLElement>(null);
+  const reduceMotion = useReducedMotion();
+  const { scrollYProgress } = useScroll({
+    target: articleRef,
+    offset: ["start end", "end start"],
+  });
+  const easedProgress = useSpring(scrollYProgress, scrollSpring);
+  const indexY = useTransform(easedProgress, [0, 1], [10, -12]);
+  const identityY = useTransform(easedProgress, [0, 1], [24, -18]);
+  const detailsY = useTransform(easedProgress, [0, 1], [10, -8]);
+
+  return (
+    <motion.article
+      ref={articleRef}
+      initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-8%" }}
+      transition={{ duration: 0.58, delay: index * 0.07, ease: [0.16, 1, 0.3, 1] }}
+    >
+      <Link href={item.url} target="_blank" rel="noopener noreferrer" className={styles.workEntry}>
+        <motion.span
+          className={styles.workIndex}
+          style={{ y: reduceMotion ? 0 : indexY }}
+          aria-hidden
+        >
+          {String(index + 1).padStart(2, "0")}
+        </motion.span>
+        <motion.div className={styles.workIdentity} style={{ y: reduceMotion ? 0 : identityY }}>
+          <span className={styles.workRole}>{item.role}</span>
+          <h3>{item.title}</h3>
+        </motion.div>
+        <motion.div className={styles.workDetails} style={{ y: reduceMotion ? 0 : detailsY }}>
+          <p>{item.description}</p>
+          <div className={styles.workFooter}>
+            <div className={styles.workTags}>{item.tech.slice(0, 3).map((tech) => <span key={tech}>{tech}</span>)}</div>
+            <span className={styles.workOpen}>visit <i aria-hidden>↗</i></span>
+          </div>
+        </motion.div>
+      </Link>
+    </motion.article>
+  );
+}
+
+function ProjectEntry({ project, index }: { project: FeaturedProject; index: number }) {
+  const reduceMotion = useReducedMotion();
+  const isPrimary = index === 0;
+
+  return (
+    <motion.article
+      initial={reduceMotion ? false : {
+        opacity: 0,
+        x: isPrimary ? 0 : 24,
+        y: isPrimary ? 30 : 0,
+      }}
+      whileInView={{ opacity: 1, x: 0, y: 0 }}
+      viewport={{ once: true, margin: "-6%" }}
+      transition={{
+        duration: 0.58,
+        delay: index * 0.09,
+        ease: [0.16, 1, 0.3, 1],
+      }}
+    >
+      <Link href={project.github ?? project.demo ?? "#"} target="_blank" rel="noopener noreferrer" className={styles.projectTile}>
+        <div className={styles.projectTopline}>
+          <span>{String(index + 3).padStart(2, "0")}</span>
+          <span>{project.tech[0]}</span>
+        </div>
+        <div className={styles.projectCopy}>
+          <h3>{project.title}</h3>
+          <p>{project.description}</p>
+        </div>
+        <div className={styles.projectSignal} aria-hidden>
+          <span>{projectSignals[project.id]?.input ?? "input"}</span>
+          <motion.i
+            initial={reduceMotion ? false : { scaleX: 0 }}
+            whileInView={{ scaleX: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.48, delay: 0.22 + index * 0.08, ease: [0.16, 1, 0.3, 1] }}
+          />
+          <span>{projectSignals[project.id]?.output ?? "output"}</span>
+        </div>
+        <div className={styles.projectFooter}>
+          <span>{project.tech.slice(0, 3).join(" · ")}</span>
+          <span>source <i aria-hidden>↗</i></span>
+        </div>
+      </Link>
+    </motion.article>
+  );
+}
 
 function shortDate(date: string) {
   return new Intl.DateTimeFormat("en", {
@@ -163,60 +269,25 @@ export default function Home({ latestPosts }: { latestPosts: HomePost[] }) {
           <SectionHeading
             index="01"
             eyebrow="selected work"
-            title="Built, shipped, and still alive."
-            description="Security work, public products, and low-level systems that made it past the prototype."
+            title="The work that stuck."
+            description="A security practice, a drone team, and a trail of systems built mostly to find out what happens underneath."
           />
 
           <div className={styles.workList}>
             {work.map((item, index) => (
-              <motion.article
-                key={item.id}
-                initial={{ opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-8%" }}
-                transition={{ duration: 0.4, delay: index * 0.06, ease: [0.16, 1, 0.3, 1] }}
-              >
-                <Link href={item.url} target="_blank" rel="noopener noreferrer" className={styles.workRow}>
-                  <span className={styles.rowIndex}>{String(index + 1).padStart(2, "0")}</span>
-                  <div className={styles.rowTitle}>
-                    <span>{item.role}</span>
-                    <h3>{item.title}</h3>
-                  </div>
-                  <div className={styles.rowSummary}>
-                    <p>{item.description}</p>
-                    <div className={styles.rowTags}>{item.tech.slice(0, 3).map((tech) => <span key={tech}>{tech}</span>)}</div>
-                  </div>
-                  <span className={styles.rowArrow} aria-hidden>↗</span>
-                </Link>
-              </motion.article>
+              <WorkCase key={item.id} item={item} index={index} />
             ))}
           </div>
 
           <div id="projects" className={styles.projectGroup}>
             <div className={styles.subheading}>
-              <span>independent systems</span>
+              <span>03—05 / built out of curiosity</span>
               <Link href="https://github.com/ramzxy" target="_blank" rel="noopener noreferrer">all repositories ↗</Link>
             </div>
 
-            <div className={styles.projectList}>
+            <div className={styles.projectShelf}>
               {featuredProjects.map((project, index) => (
-                <motion.article
-                  key={project.id}
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.35, delay: index * 0.05 }}
-                >
-                  <Link href={project.github ?? project.demo ?? "#"} target="_blank" rel="noopener noreferrer" className={styles.projectRow}>
-                    <span className={styles.rowIndex}>{String(index + 3).padStart(2, "0")}</span>
-                    <h3>{project.title}</h3>
-                    <div className={styles.projectSummary}>
-                      <p>{project.description}</p>
-                      <span>{project.tech.slice(0, 3).join(" · ")}</span>
-                    </div>
-                    <i aria-hidden>↗</i>
-                  </Link>
-                </motion.article>
+                <ProjectEntry key={project.id} project={project} index={index} />
               ))}
             </div>
           </div>
