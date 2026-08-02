@@ -360,8 +360,20 @@ export default function Home({ latestPosts }: { latestPosts: HomePost[] }) {
 
             <div className={styles.aboutDetails}>
               <div>
-                <span>working around</span>
-                <p>C++ · eBPF · Linux · TypeScript · security research</p>
+                <span>languages</span>
+                <p>C · C++ · Java · Python · TypeScript</p>
+              </div>
+              <div>
+                <span>systems / security</span>
+                <p>Linux Internals · eBPF · containerization </p>
+              </div>
+              <div>
+                <span>networking / backend</span>
+                <p>express · Boost.Asio · FastAPI · PostgreSQL · Redis · mongodb</p>
+              </div>
+              <div>
+                <span>web / infra</span>
+                <p>Vue · React · Next.js · Docker · AWS · Cloudflare</p>
               </div>
               <div>
                 <span>elsewhere</span>
