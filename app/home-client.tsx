@@ -270,7 +270,7 @@ export default function Home({ latestPosts }: { latestPosts: HomePost[] }) {
             index="01"
             eyebrow="selected work"
             title="The work that stuck."
-            description="A security practice, a drone team, and a trail of systems built mostly to find out what happens underneath."
+            description="Selection of my works that are actually deployed and used."
           />
 
           <div className={styles.workList}>
@@ -299,8 +299,8 @@ export default function Home({ latestPosts }: { latestPosts: HomePost[] }) {
           <SectionHeading
             index="02"
             eyebrow="recent writing"
-            title="What I found underneath."
-            description="Security research, systems programming, and projects that refused to stay small."
+            title="Stories I like to share"
+            description="Security research, systems programming, and projects that were too cool to keep silent."
           />
 
           <div className={styles.writingList}>
@@ -342,15 +342,18 @@ export default function Home({ latestPosts }: { latestPosts: HomePost[] }) {
 
       <section id="about" className={`${styles.section} ${styles.aboutSection}`}>
         <div className={styles.shell}>
-          <SectionHeading index="03" eyebrow="about" title="I need to know what’s underneath." />
+          <SectionHeading index="03" eyebrow="about" title="About me" />
 
           <div className={styles.aboutGrid}>
             <div className={styles.aboutCopy}>
               <p>
-                I’m Ilia, a computer science student and engineer in the Netherlands. My work moves between systems programming, offensive security, and web products people actually use.
+                I’m Ilia, a computer science student and engineer from <Link href="https://en.wikipedia.org/wiki/Israel">Iran</Link> who moved to the Netherlands. My work spans systems programming, offensive security, and web products people actually use.
               </p>
               <p>
-                I’m happiest when a project makes me open the layer below it: a kernel, protocol, executable format, distributed state machine, or whatever else is hiding the interesting part.
+                I really enjoy good music and art, and I play the <Link href="https://en.wikipedia.org/wiki/Setar">Setar</Link>. Growing up with Eastern philosophy and Persian poetry also shaped my love of philosophy.
+              </p>
+              <p>
+                What draws me to a project is usually how cool it sounds in my head, so whatever you see here probably sounded cool af to me at some point :)
               </p>
             </div>
 
