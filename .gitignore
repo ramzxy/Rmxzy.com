@@ -24,6 +24,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+.dev-*.log
+.prod-*.log
+.audit-*.png
+.lighthouse-*.json
 
 # local env files
 .env*.local

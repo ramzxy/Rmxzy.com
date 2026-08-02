@@ -1,4 +1,4 @@
-import { Project } from "../components/project-card";
+import type { Project } from "../components/project-card";
 
 export const projects: Project[] = [
   {
@@ -6,7 +6,7 @@ export const projects: Project[] = [
     index: 1,
     title: "Khor",
     description:
-      "A real-time kernel orchestra for Linux. eBPF probes capture live system activity (exec, scheduler, network, block I/O, IRQs) and a deterministic music engine maps it into generative sound through a custom synth, MIDI, and OSC.",
+      "Turns live Linux kernel activity into sound. eBPF captures the system; a C++ engine maps it to synth, MIDI, and OSC.",
     image: "/projects/khor.webp",
     tech: ["C++", "eBPF", "Linux", "MIDI", "OSC"],
     github: "https://github.com/ramzxy/khor",
@@ -17,7 +17,7 @@ export const projects: Project[] = [
     index: 2,
     title: "Cedis",
     description:
-      "A high-performance Redis clone built from scratch in C++. Implements the RESP protocol, supports persistence, and handles concurrent connections with a custom event loop.",
+      "A Redis-compatible server in C++ with RESP, persistence, concurrent clients, and a custom event loop.",
     image: "/projects/cedis.webp",
     tech: ["C++", "RESP", "TCP/IP", "Event Loop"],
     github: "https://github.com/ramzxy/Cedis",
@@ -28,7 +28,7 @@ export const projects: Project[] = [
     index: 3,
     title: "EmuChip8",
     description:
-      "A C++ implementation of the CHIP-8 virtual machine using SDL2, designed to run classic CHIP-8 games and programs.",
+      "A CHIP-8 emulator in C++ and SDL2, built to understand a virtual machine from instruction fetch to display.",
     image: "/projects/emuchip8.webp",
     tech: ["C++", "SDL2", "CHIP-8", "Emulator"],
     github: "https://github.com/ramzxy/EmuChip8",

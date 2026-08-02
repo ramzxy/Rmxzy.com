@@ -95,12 +95,21 @@ export const CommandPalette = ({ open, setOpen }: CommandPaletteProps) => {
     },
     {
       id: "nav-projects",
-      label: "Go to projects",
-      hint: "[02]",
+      label: "Go to personal projects",
+      hint: "inside work",
       group: "navigate",
       icon: <Hash size={14} />,
       perform: go("projects"),
       keywords: ["khor", "cedis", "side"],
+    },
+    {
+      id: "nav-writing",
+      label: "Go to writing",
+      hint: "[02]",
+      group: "navigate",
+      icon: <Hash size={14} />,
+      perform: go("writing"),
+      keywords: ["blog", "notes", "articles"],
     },
     {
       id: "nav-about",
@@ -114,7 +123,7 @@ export const CommandPalette = ({ open, setOpen }: CommandPaletteProps) => {
     {
       id: "nav-connect",
       label: "Go to contact",
-      hint: "[05]",
+      hint: "email",
       group: "navigate",
       icon: <Hash size={14} />,
       perform: go("connect"),
@@ -140,11 +149,11 @@ export const CommandPalette = ({ open, setOpen }: CommandPaletteProps) => {
     },
     {
       id: "open-blog",
-      label: "Open blog",
-      hint: "blog.rmxzy.com",
+      label: "Open all writing",
+      hint: "rmxzy.com/blog",
       group: "open",
       icon: <BookOpen size={14} />,
-      perform: openUrl("https://blog.rmxzy.com"),
+      perform: openUrl("/blog", false),
     },
     {
       id: "open-ramsy",

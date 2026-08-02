@@ -56,7 +56,7 @@ export default function NotFound() {
               about/
             </Link>
             <Link
-              href="https://blog.rmxzy.com"
+              href="/blog"
               className="hover:text-[var(--phosphor)] transition-colors"
             >
               blog/

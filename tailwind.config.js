@@ -6,14 +6,14 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Satoshi", ...defaultTheme.fontFamily.sans],
-        mono: ["var(--font-geist-pixel-square)", "monospace"],
-        display: ["var(--font-geist-pixel-square)", ...defaultTheme.fontFamily.sans],
-        "pixel-square": ["var(--font-geist-pixel-square)", "monospace"],
-        "pixel-grid": ["var(--font-geist-pixel-grid)", "monospace"],
-        "pixel-circle": ["var(--font-geist-pixel-circle)", "monospace"],
-        "pixel-triangle": ["var(--font-geist-pixel-triangle)", "monospace"],
-        "pixel-line": ["var(--font-geist-pixel-line)", "monospace"],
+        sans: ["Segoe UI", ...defaultTheme.fontFamily.sans],
+        mono: ["var(--font-inktrap)", ...defaultTheme.fontFamily.sans],
+        display: ["var(--font-inktrap)", ...defaultTheme.fontFamily.sans],
+        "pixel-square": ["var(--font-inktrap)", ...defaultTheme.fontFamily.sans],
+        "pixel-grid": ["var(--font-inktrap)", ...defaultTheme.fontFamily.sans],
+        "pixel-circle": ["var(--font-inktrap)", ...defaultTheme.fontFamily.sans],
+        "pixel-triangle": ["var(--font-inktrap)", ...defaultTheme.fontFamily.sans],
+        "pixel-line": ["var(--font-inktrap)", ...defaultTheme.fontFamily.sans],
       },
       backgroundImage: {
         "gradient-radial":

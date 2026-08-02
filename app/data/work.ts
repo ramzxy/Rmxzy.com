@@ -11,18 +11,18 @@ export const work: Work[] = [
   {
     id: "ramsy",
     title: "ramsy.eu",
-    role: "founder & engineer",
+    role: "Founder / engineering",
     description:
-      "AI-augmented offensive security firm. Pen testing engagements paired with custom tooling that automates recon, fuzz triage, and reporting.",
+      "I founded ramsy.eu to pair hands-on security work with tooling we actually use for recon, fuzzing triage, evidence, and reporting.",
     url: "https://ramsy.eu",
     tech: ["Security", "AI Tooling", "Next.js", "Python"],
   },
   {
     id: "droneteamtwente",
-    title: "droneteamtwente.nl",
-    role: "web engineer",
+    title: "Drone Team Twente",
+    role: "Website / engineering",
     description:
-      "Public site for the University of Twente's autonomous-drone student team. Annual IMechE UAS challenge competitors building disaster-relief UAVs.",
+      "I rebuilt the public site for the University of Twente team developing autonomous aircraft for disaster-response challenges.",
     url: "https://droneteamtwente.nl",
     tech: ["Web", "TypeScript", "Static Site"],
   },

@@ -5,7 +5,6 @@ import React, { useRef, useEffect } from "react";
 interface ParticlesProps {
 	className?: string;
 	quantity?: number;
-	refresh?: boolean;
 }
 
 type Circle = {
@@ -67,26 +66,27 @@ const ATTRACT_FORCE = 0.04;
 const EXPLODE_RADIUS = 180;
 const EXPLODE_FORCE = 10;
 const FRICTION = 0.96;
-const SPARK_COUNT = 12;
+const SPARK_COUNT = 8;
 
 // Ship battle constants
-const SHIPS_PER_SIDE = 5;
+const SHIPS_PER_SIDE = 3;
 const SHIP_SIZE = 14;
-const SHIP_THRUST = 0.02;
+const SHIP_THRUST = 0.026;
 const SHIP_FRICTION = 0.985;
-const SHIP_MAX_SPEED = 2.5;
-const SHIP_SHOOT_RANGE = 350;
-const SHIP_SHOOT_COOLDOWN_MIN = 90;
-const SHIP_SHOOT_COOLDOWN_MAX = 220;
+const SHIP_MAX_SPEED = 3.1;
+const SHIP_SHOOT_RANGE = 460;
+const SHIP_TRACK_RANGE = 680;
+const SHIP_SHOOT_COOLDOWN_MIN = 55;
+const SHIP_SHOOT_COOLDOWN_MAX = 135;
 const SHIP_EXPLODE_FORCE = 8;
 const SHIP_SEPARATION_DIST = 120;
 const SHIP_SEPARATION_FORCE = 0.04;
-const LASER_SPEED = 4;
-const LASER_LIFE = 180;
+const LASER_SPEED = 6.2;
+const LASER_LIFE = 120;
 const LASER_LENGTH = 8;
 const EDGE_MARGIN = 200;
-const MAX_LASERS = 60;
-const MAX_EXPLOSIONS = 30;
+const MAX_LASERS = 24;
+const MAX_EXPLOSIONS = 12;
 
 // Faction colors
 const REBEL_LASER = "100, 180, 255";
@@ -97,7 +97,6 @@ const EMPIRE_HULL = "180, 50, 50";
 export default function Particles({
 	className = "",
 	quantity = 300,
-	refresh = false,
 }: ParticlesProps) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
 	const canvasContainerRef = useRef<HTMLDivElement>(null);
@@ -116,6 +115,10 @@ export default function Particles({
 	const animIdRef = useRef(0);
 	const effectiveQuantity = useRef(quantity);
 	const enableShips = useRef(true);
+	const isInViewport = useRef(true);
+	const isRunning = useRef(false);
+	const lastFrameTime = useRef(0);
+	const frameInterval = useRef(1000 / 40);
 
 	// ── Canvas setup ──────────────────────────────────
 
@@ -124,7 +127,8 @@ export default function Particles({
 			circleCount.current = 0;
 			canvasSize.current.w = canvasContainerRef.current.offsetWidth;
 			canvasSize.current.h = canvasContainerRef.current.offsetHeight;
-			dprRef.current = window.devicePixelRatio || 1;
+			// Ambient detail does not benefit from a full 2x/3x backing store.
+			dprRef.current = Math.min(window.devicePixelRatio || 1, 1.5);
 			const dpr = dprRef.current;
 			canvasRef.current.width = canvasSize.current.w * dpr;
 			canvasRef.current.height = canvasSize.current.h * dpr;
@@ -281,7 +285,7 @@ export default function Particles({
 		return current + diff * amount;
 	};
 
-	const updateShips = () => {
+	const updateShips = (timeScale: number) => {
 		const { w, h } = canvasSize.current;
 		const cx = w * 0.5;
 		const cy = h * 0.5;
@@ -289,7 +293,10 @@ export default function Particles({
 		for (const ship of ships.current) {
 			// Fade in
 			if (ship.alpha < ship.targetAlpha) {
-				ship.alpha = Math.min(ship.targetAlpha, ship.alpha + 0.008);
+				ship.alpha = Math.min(
+					ship.targetAlpha,
+					ship.alpha + 0.008 * timeScale,
+				);
 			}
 
 			// ── Edge avoidance: rotate heading toward center ──
@@ -305,7 +312,7 @@ export default function Particles({
 				ship.angle = steerAngleToward(
 					ship.angle,
 					toCenterAngle,
-					0.06 + urgency * 0.12,
+					Math.min(0.42, (0.06 + urgency * 0.12) * timeScale),
 				);
 			}
 
@@ -327,19 +334,53 @@ export default function Particles({
 			}
 			if (sepX !== 0 || sepY !== 0) {
 				const sepAngle = Math.atan2(sepY, sepX);
-				ship.angle = steerAngleToward(ship.angle, sepAngle, 0.03);
+				ship.angle = steerAngleToward(
+					ship.angle,
+					sepAngle,
+					Math.min(0.12, 0.03 * timeScale),
+				);
+			}
+
+			// Track the closest enemy just enough to keep the battle converging.
+			// The same lookup is reused for firing, so the livelier dogfight does
+			// not add a second nearest-neighbour pass.
+			let nearestEnemy: Ship | null = null;
+			let nearestDist = Infinity;
+			for (const other of ships.current) {
+				if (other.faction === ship.faction) continue;
+				const dx = other.x - ship.x;
+				const dy = other.y - ship.y;
+				const distance = Math.sqrt(dx * dx + dy * dy);
+				if (distance < nearestDist) {
+					nearestDist = distance;
+					nearestEnemy = other;
+				}
+			}
+
+			if (nearestEnemy && nearestDist < SHIP_TRACK_RANGE) {
+				const pursuitAngle = Math.atan2(
+					nearestEnemy.y - ship.y,
+					nearestEnemy.x - ship.x,
+				);
+				ship.angle = steerAngleToward(
+					ship.angle,
+					pursuitAngle,
+					Math.min(0.08, 0.018 * timeScale),
+				);
 			}
 
 			// ── Random wandering: gentle sweeping curves ──
-			ship.angle += (Math.random() - 0.5) * 0.04;
+			ship.angle +=
+				(Math.random() - 0.5) * 0.04 * Math.sqrt(timeScale);
 
 			// ── Thrust always forward along heading ──
-			ship.vx += Math.cos(ship.angle) * SHIP_THRUST;
-			ship.vy += Math.sin(ship.angle) * SHIP_THRUST;
+			ship.vx += Math.cos(ship.angle) * SHIP_THRUST * timeScale;
+			ship.vy += Math.sin(ship.angle) * SHIP_THRUST * timeScale;
 
 			// Friction
-			ship.vx *= SHIP_FRICTION;
-			ship.vy *= SHIP_FRICTION;
+			const shipFriction = Math.pow(SHIP_FRICTION, timeScale);
+			ship.vx *= shipFriction;
+			ship.vy *= shipFriction;
 
 			// Clamp speed
 			const speed = Math.sqrt(ship.vx * ship.vx + ship.vy * ship.vy);
@@ -349,29 +390,16 @@ export default function Particles({
 			}
 
 			// Update position
-			ship.x += ship.vx;
-			ship.y += ship.vy;
+			ship.x += ship.vx * timeScale;
+			ship.y += ship.vy * timeScale;
 
 			// Hard clamp; never leave canvas
 			ship.x = Math.max(5, Math.min(w - 5, ship.x));
 			ship.y = Math.max(5, Math.min(h - 5, ship.y));
 
 			// ── Shoot at nearby enemies (don't chase them) ──
-			ship.shootCooldown--;
+			ship.shootCooldown -= timeScale;
 			if (ship.shootCooldown <= 0 && lasers.current.length < MAX_LASERS) {
-				let nearestEnemy: Ship | null = null;
-				let nearestDist = Infinity;
-				for (const other of ships.current) {
-					if (other.faction === ship.faction) continue;
-					const dx = other.x - ship.x;
-					const dy = other.y - ship.y;
-					const d = Math.sqrt(dx * dx + dy * dy);
-					if (d < nearestDist) {
-						nearestDist = d;
-						nearestEnemy = other;
-					}
-				}
-
 				if (nearestEnemy && nearestDist < SHIP_SHOOT_RANGE) {
 					const dx = nearestEnemy.x - ship.x;
 					const dy = nearestEnemy.y - ship.y;
@@ -441,15 +469,15 @@ export default function Particles({
 		ctx.stroke();
 	};
 
-	const updateLasers = () => {
+	const updateLasers = (timeScale: number) => {
 		const { w, h } = canvasSize.current;
 		let writeIdx = 0;
 
 		for (let i = 0; i < lasers.current.length; i++) {
 			const laser = lasers.current[i];
-			laser.x += laser.vx;
-			laser.y += laser.vy;
-			laser.life--;
+			laser.x += laser.vx * timeScale;
+			laser.y += laser.vy * timeScale;
+			laser.life -= timeScale;
 
 			let remove =
 				laser.life <= 0 ||
@@ -512,7 +540,7 @@ export default function Particles({
 
 	// ── Explosions ────────────────────────────────────
 
-	const drawExplosions = () => {
+	const drawExplosions = (timeScale: number) => {
 		if (!context.current) return;
 		const ctx = context.current;
 		let writeIdx = 0;
@@ -544,16 +572,17 @@ export default function Particles({
 					ctx.fill();
 					allFaded = false;
 				}
-				spark.x += spark.vx;
-				spark.y += spark.vy;
-				spark.vx *= 0.97;
-				spark.vy *= 0.97;
-				spark.alpha *= 0.985;
-				spark.size *= 0.99;
+				spark.x += spark.vx * timeScale;
+				spark.y += spark.vy * timeScale;
+				spark.vx *= Math.pow(0.97, timeScale);
+				spark.vy *= Math.pow(0.97, timeScale);
+				spark.alpha *= Math.pow(0.985, timeScale);
+				spark.size *= Math.pow(0.99, timeScale);
 			}
 
-			exp.radius += (exp.maxRadius - exp.radius) * 0.06;
-			exp.alpha *= 0.98;
+			const radiusEase = 1 - Math.pow(0.94, timeScale);
+			exp.radius += (exp.maxRadius - exp.radius) * radiusEase;
+			exp.alpha *= Math.pow(0.98, timeScale);
 
 			if (exp.alpha >= 0.005 || !allFaded) {
 				explosions.current[writeIdx++] = exp;
@@ -577,7 +606,7 @@ export default function Particles({
 
 	// ── Animate ───────────────────────────────────────
 
-	const animate = () => {
+	const animate = (timeScale: number) => {
 		clearContext();
 		const { w, h } = canvasSize.current;
 		const mx = mouse.current.x;
@@ -595,8 +624,8 @@ export default function Particles({
 				h - circle.y - circle.size,
 			);
 			const edgeFactor = Math.min(1, Math.max(0, closestEdge / 20));
-			if (edgeFactor > 1) {
-				circle.alpha += 0.04;
+			if (edgeFactor >= 1) {
+				circle.alpha += 0.04 * timeScale;
 				if (circle.alpha > circle.targetAlpha)
 					circle.alpha = circle.targetAlpha;
 			} else {
@@ -605,17 +634,19 @@ export default function Particles({
 
 			const adx = mx - circle.x;
 			const ady = my - circle.y;
-			const dist = Math.sqrt(adx * adx + ady * ady);
-			if (dist < ATTRACT_RADIUS && dist > 1) {
+			const distSquared = adx * adx + ady * ady;
+			if (distSquared < ATTRACT_RADIUS * ATTRACT_RADIUS && distSquared > 1) {
+				const dist = Math.sqrt(distSquared);
 				const strength = ATTRACT_FORCE * (1 - dist / ATTRACT_RADIUS);
-				circle.vx += (adx / dist) * strength;
-				circle.vy += (ady / dist) * strength;
+				circle.vx += (adx / dist) * strength * timeScale;
+				circle.vy += (ady / dist) * strength * timeScale;
 			}
 
-			circle.vx *= FRICTION;
-			circle.vy *= FRICTION;
-			circle.x += circle.dx + circle.vx;
-			circle.y += circle.dy + circle.vy;
+			const particleFriction = Math.pow(FRICTION, timeScale);
+			circle.vx *= particleFriction;
+			circle.vy *= particleFriction;
+			circle.x += (circle.dx + circle.vx) * timeScale;
+			circle.y += (circle.dy + circle.vy) * timeScale;
 
 			if (
 				circle.x < -circle.size ||
@@ -632,8 +663,8 @@ export default function Particles({
 
 		// Update ships & lasers (skipped on small viewports / weak hardware)
 		if (enableShips.current) {
-			updateShips();
-			updateLasers();
+			updateShips(timeScale);
+			updateLasers(timeScale);
 
 			if (context.current) {
 				for (const laser of lasers.current) {
@@ -646,14 +677,17 @@ export default function Particles({
 		}
 
 		// Draw explosions on top
-		drawExplosions();
+		drawExplosions(timeScale);
 	};
 
 	// ── Effects ───────────────────────────────────────
 
 	useEffect(() => {
 		if (canvasRef.current) {
-			context.current = canvasRef.current.getContext("2d");
+			context.current = canvasRef.current.getContext("2d", {
+				alpha: true,
+				desynchronized: true,
+			});
 		}
 
 		// Skip the simulation entirely for users who prefer reduced motion.
@@ -661,49 +695,93 @@ export default function Particles({
 			return;
 		}
 
-		// Scale quantity to viewport area so phones/tablets/narrow windows
-		// don't pay the full particle cost. Reference 1920×1080 = 1.0; floor at 0.25.
-		const referenceArea = 1920 * 1080;
-		const scale = Math.min(
-			1,
-			Math.max(0.25, (window.innerWidth * window.innerHeight) / referenceArea),
-		);
-		effectiveQuantity.current = Math.round(quantity * scale);
+		const container = canvasContainerRef.current;
+		if (!container) return;
 
-		// Disable the ship-battle subsystem (the most expensive part of the
-		// loop) on small viewports and on machines with limited hardware
-		// concurrency, so the ambient particle field still works smoothly.
-		const cores = navigator.hardwareConcurrency || 8;
-		const isNarrow = window.innerWidth < 1024;
-		enableShips.current = !isNarrow && cores > 4;
+		type NavigatorWithPerformanceHints = Navigator & {
+			deviceMemory?: number;
+			connection?: { saveData?: boolean };
+		};
 
+		const performanceHints = navigator as NavigatorWithPerformanceHints;
+		const cores = navigator.hardwareConcurrency || 4;
+		const memory = performanceHints.deviceMemory || 4;
+		const saveData = Boolean(performanceHints.connection?.saveData);
+
+		const configureBudget = () => {
+			const width = container.offsetWidth || window.innerWidth;
+			const height = container.offsetHeight || window.innerHeight;
+			const referenceArea = 1920 * 1080;
+			const areaScale = Math.min(1, Math.max(0.22, (width * height) / referenceArea));
+			const hardwareScale = saveData ? 0.45 : cores >= 8 && memory >= 8 ? 1 : cores >= 4 ? 0.72 : 0.5;
+
+			effectiveQuantity.current = Math.max(
+				42,
+				Math.round(quantity * areaScale * hardwareScale),
+			);
+			enableShips.current = width >= 900 && cores >= 4 && memory >= 4 && !saveData;
+			const targetFps =
+				cores >= 8 && memory >= 8 ? 60 : cores >= 4 ? 40 : 30;
+			frameInterval.current = 1000 / targetFps;
+		};
+
+		configureBudget();
 		initCanvas();
 
-		const tick = () => {
-			animate();
+		const tick = (time: number) => {
+			if (!isRunning.current) return;
+			const elapsed = time - lastFrameTime.current;
+			if (elapsed >= frameInterval.current) {
+				lastFrameTime.current = time - (elapsed % frameInterval.current);
+				// Physics target 60 Hz even when the render budget is 30–40 FPS.
+				// This preserves the original combat tempo without doubling paint work.
+				const timeScale = Math.min(2.5, elapsed / (1000 / 60));
+				animate(timeScale);
+			}
 			animIdRef.current = window.requestAnimationFrame(tick);
 		};
-		tick();
+
+		const stopLoop = () => {
+			isRunning.current = false;
+			window.cancelAnimationFrame(animIdRef.current);
+		};
+
+		const startLoop = () => {
+			if (isRunning.current || document.hidden || !isInViewport.current) return;
+			isRunning.current = true;
+			lastFrameTime.current = performance.now();
+			animIdRef.current = window.requestAnimationFrame(tick);
+		};
+
+		const visibilityObserver = new IntersectionObserver(
+			([entry]) => {
+				isInViewport.current = entry.isIntersecting;
+				if (entry.isIntersecting) startLoop();
+				else stopLoop();
+			},
+			{ rootMargin: "120px 0px", threshold: 0.01 },
+		);
+		visibilityObserver.observe(container);
+		startLoop();
 
 		const handleVisibility = () => {
-			if (document.hidden) {
-				window.cancelAnimationFrame(animIdRef.current);
-			} else {
-				tick();
+			if (document.hidden) stopLoop();
+			else startLoop();
+		};
+
+		const handleMouseMove = (e: PointerEvent) => {
+			if (canvasRef.current && isInViewport.current) {
+				const rect = canvasRef.current.getBoundingClientRect();
+				const inside = e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom;
+				mouse.current.x = inside ? e.clientX - rect.left : -9999;
+				mouse.current.y = inside ? e.clientY - rect.top : -9999;
 			}
 		};
 
-		const handleMouseMove = (e: MouseEvent) => {
-			if (canvasRef.current) {
+		const handleClick = (e: PointerEvent) => {
+			if (canvasRef.current && isInViewport.current) {
 				const rect = canvasRef.current.getBoundingClientRect();
-				mouse.current.x = e.clientX - rect.left;
-				mouse.current.y = e.clientY - rect.top;
-			}
-		};
-
-		const handleClick = (e: MouseEvent) => {
-			if (canvasRef.current) {
-				const rect = canvasRef.current.getBoundingClientRect();
+				if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) return;
 				const cx = e.clientX - rect.left;
 				const cy = e.clientY - rect.top;
 
@@ -776,23 +854,37 @@ export default function Particles({
 			}
 		};
 
+		let resizeFrame = 0;
+		let observedWidth = container.offsetWidth;
+		let observedHeight = container.offsetHeight;
+		const resizeObserver = new ResizeObserver(() => {
+			const nextWidth = container.offsetWidth;
+			const nextHeight = container.offsetHeight;
+			if (nextWidth === observedWidth && nextHeight === observedHeight) return;
+			observedWidth = nextWidth;
+			observedHeight = nextHeight;
+			window.cancelAnimationFrame(resizeFrame);
+			resizeFrame = window.requestAnimationFrame(() => {
+				configureBudget();
+				initCanvas();
+			});
+		});
+		resizeObserver.observe(container);
+
 		document.addEventListener("visibilitychange", handleVisibility);
-		window.addEventListener("resize", initCanvas);
-		window.addEventListener("mousemove", handleMouseMove);
-		window.addEventListener("mousedown", handleClick);
+		window.addEventListener("pointermove", handleMouseMove, { passive: true });
+		window.addEventListener("pointerdown", handleClick, { passive: true });
 
 		return () => {
-			window.cancelAnimationFrame(animIdRef.current);
+			stopLoop();
+			window.cancelAnimationFrame(resizeFrame);
+			visibilityObserver.disconnect();
+			resizeObserver.disconnect();
 			document.removeEventListener("visibilitychange", handleVisibility);
-			window.removeEventListener("resize", initCanvas);
-			window.removeEventListener("mousemove", handleMouseMove);
-			window.removeEventListener("mousedown", handleClick);
+			window.removeEventListener("pointermove", handleMouseMove);
+			window.removeEventListener("pointerdown", handleClick);
 		};
 	}, []);
-
-	useEffect(() => {
-		initCanvas();
-	}, [refresh]);
 
 	// Theme color detection
 	useEffect(() => {
@@ -805,7 +897,6 @@ export default function Particles({
 
 		const handleThemeChange = () => {
 			updateColor();
-			initCanvas();
 		};
 		window.addEventListener("theme-change", handleThemeChange);
 		return () =>

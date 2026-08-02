@@ -15,8 +15,8 @@ const groups: { title: string; items: { keys: string[]; label: string }[] }[] = 
     items: [
       { keys: ["1"], label: "go to work" },
       { keys: ["2"], label: "go to projects" },
-      { keys: ["3"], label: "go to about" },
-      { keys: ["4"], label: "open blog" },
+      { keys: ["3"], label: "go to writing" },
+      { keys: ["4"], label: "go to about" },
       { keys: ["5"], label: "go to contact" },
     ],
   },

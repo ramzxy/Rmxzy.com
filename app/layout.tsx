@@ -1,13 +1,6 @@
 import "../global.css";
 import { Metadata } from "next";
 import { Analytics } from "./components/analytics";
-import {
-  GeistPixelSquare,
-  GeistPixelGrid,
-  GeistPixelCircle,
-  GeistPixelTriangle,
-  GeistPixelLine,
-} from "geist/font/pixel";
 
 export const metadata: Metadata = {
   title: {
@@ -99,7 +92,7 @@ const personSchema = {
     "https://x.com/ramsyTheDream",
     "https://www.instagram.com/mirza.ilia/",
     "https://t.me/Rmsy0x",
-    "https://blog.rmxzy.com",
+    "https://rmxzy.com/blog",
     "https://ramsy.eu",
   ],
   address: {
@@ -125,7 +118,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="canonical" href="https://rmxzy.com" />
+        <link
+          rel="preload"
+          href="/fonts/Whyte-Inktrap-500.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
         <Analytics />
         <script
           type="application/ld+json"
@@ -136,11 +135,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
       </head>
-      <body
-        className={`${GeistPixelSquare.variable} ${GeistPixelGrid.variable} ${GeistPixelCircle.variable} ${GeistPixelTriangle.variable} ${GeistPixelLine.variable} ${
-          process.env.NODE_ENV === "development" ? "debug-screens" : ""
-        }`}
-      >
+      <body className={process.env.NODE_ENV === "development" ? "debug-screens" : undefined}>
         {children}
       </body>
     </html>
