@@ -95,15 +95,14 @@ export function ArticleReadingFrame({ items, children }: Props) {
               aria-controls="mobile-article-sections"
               onClick={() => setOpen((current) => !current)}
             >
-              <span className="mobile-article-nav__signal" aria-hidden />
               <span className="mobile-article-nav__current">
-                <small>now reading</small>
+                <small>section</small>
                 <strong>{activeTitle}</strong>
               </span>
               <span className="mobile-article-nav__count">
                 {String(activeIndex + 1).padStart(2, "0")}/{String(items.length).padStart(2, "0")}
               </span>
-              <span className="mobile-article-nav__toggle" aria-hidden>{open ? "×" : "+"}</span>
+              <span className="mobile-article-nav__toggle" aria-hidden>{open ? "close" : "contents"}</span>
             </button>
           </nav>
         )}

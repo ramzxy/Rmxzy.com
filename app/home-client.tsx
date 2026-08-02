@@ -3,16 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
 import { useAsciiText, ansiShadow } from "react-ascii-text";
 import { useEffect, useState, type CSSProperties, type RefObject } from "react";
 import type { BlogPostSummary } from "../lib/blog";
-import { CommandPalette } from "./components/command-palette";
 import { ScrollProgress } from "./components/scroll-progress";
+import { SiteHeader } from "./components/site-header";
 import { SocialDock } from "./components/social-dock";
 import { TerminalText } from "./components/terminal-text";
-import { ThemeToggle } from "./components/theme-toggle";
 import { featuredProjects } from "./data/projects";
 import { work } from "./data/work";
 import styles from "./home.module.css";
@@ -20,12 +18,6 @@ import styles from "./home.module.css";
 const Particles = dynamic(() => import("./components/particles"), { ssr: false });
 
 type HomePost = Omit<BlogPostSummary, "searchText">;
-
-const navigation = [
-  { index: "01", name: "work", href: "#work" },
-  { index: "02", name: "writing", href: "#writing" },
-  { index: "03", name: "about", href: "#about" },
-];
 
 function shortDate(date: string) {
   return new Intl.DateTimeFormat("en", {
@@ -74,8 +66,6 @@ function SectionHeading({
 }
 
 export default function Home({ latestPosts }: { latestPosts: HomePost[] }) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [paletteOpen, setPaletteOpen] = useState(false);
   const [ambienceReady, setAmbienceReady] = useState(false);
   const reduceMotion = useReducedMotion();
   const asciiTextRef = useAsciiText({
@@ -102,108 +92,12 @@ export default function Home({ latestPosts }: { latestPosts: HomePost[] }) {
     return () => globalThis.clearTimeout(timeoutId);
   }, [reduceMotion]);
 
-  useEffect(() => {
-    if (!mobileMenuOpen) return;
-
-    const previousOverflow = document.body.style.overflow;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMobileMenuOpen(false);
-    };
-
-    document.body.style.overflow = "hidden";
-    window.addEventListener("keydown", closeOnEscape);
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener("keydown", closeOnEscape);
-    };
-  }, [mobileMenuOpen]);
-
   return (
     <main id="main-content" className={styles.page}>
       <a href="#main-content" className="skip-link">Skip to content</a>
       <ScrollProgress />
 
-      <header className={styles.siteHeader}>
-        <div className={styles.headerInner}>
-          <Link href="/" className={styles.logo} aria-label="rmxzy home">
-            rmxzy<span>_</span>
-          </Link>
-
-          <nav className={styles.desktopNav} aria-label="Primary navigation">
-            {navigation.map((item) => (
-              <Link key={item.href} href={item.href}>
-                <span>{item.index}</span>
-                {item.name}
-              </Link>
-            ))}
-          </nav>
-
-          <div className={styles.headerTools}>
-            <button
-              type="button"
-              className={styles.paletteButton}
-              onClick={() => setPaletteOpen(true)}
-              aria-label="Open command palette"
-            >
-              <span>command</span>
-              <kbd>Ctrl K</kbd>
-            </button>
-            <ThemeToggle />
-            <button
-              type="button"
-              className={styles.menuButton}
-              onClick={() => setMobileMenuOpen((open) => !open)}
-              aria-expanded={mobileMenuOpen}
-              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-            >
-              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.nav
-            className={styles.mobileNav}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.18 }}
-            aria-label="Mobile navigation"
-          >
-            {navigation.map((item, index) => (
-              <motion.div
-                key={item.href}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.045, duration: 0.25 }}
-              >
-                <Link href={item.href} onClick={() => setMobileMenuOpen(false)}>
-                  <span>{item.index}</span>
-                  {item.name}
-                </Link>
-              </motion.div>
-            ))}
-            <Link
-              href="mailto:me@rmxzy.com"
-              className={styles.mobileContact}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              me@rmxzy.com ↗
-            </Link>
-            <Link
-              href="/resume.pdf"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.mobileResume}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              resume ↗
-            </Link>
-          </motion.nav>
-        )}
-      </AnimatePresence>
+      <SiteHeader />
 
       <section className={styles.hero}>
         {!reduceMotion && ambienceReady && (
@@ -419,7 +313,6 @@ export default function Home({ latestPosts }: { latestPosts: HomePost[] }) {
         </div>
       </footer>
 
-      <CommandPalette open={paletteOpen} setOpen={setPaletteOpen} />
     </main>
   );
 }

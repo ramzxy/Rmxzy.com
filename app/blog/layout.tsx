@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
+import { SiteHeader } from "../components/site-header";
 import { BlogFooter } from "./components/blog-footer";
-import { BlogHeader } from "./components/blog-header";
 
 export const metadata: Metadata = {
   title: {
@@ -28,10 +28,9 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className="blog-shell">
       <a className="skip-link" href="#blog-content">Skip to writing</a>
-      <BlogHeader />
+      <SiteHeader activeSection="writing" />
       {children}
       <BlogFooter />
     </div>
   );
 }
-

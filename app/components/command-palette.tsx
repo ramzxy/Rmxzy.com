@@ -53,7 +53,11 @@ export const CommandPalette = ({ open, setOpen }: CommandPaletteProps) => {
     setOpen(false);
     requestAnimationFrame(() => {
       const el = document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else {
+        window.location.href = `/#${id}`;
+      }
     });
   };
 
