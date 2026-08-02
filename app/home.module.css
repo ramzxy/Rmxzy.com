@@ -615,6 +615,30 @@
   text-wrap: pretty;
 }
 
+.aboutCopy a {
+  color: var(--text-bright);
+  text-decoration-line: underline;
+  text-decoration-color: color-mix(in srgb, var(--phosphor) 62%, transparent);
+  text-decoration-thickness: 0.08em;
+  text-underline-offset: 0.18em;
+  transition:
+    color 160ms ease,
+    text-decoration-color 160ms ease;
+}
+
+.aboutCopy a:focus-visible {
+  border-radius: 0.1em;
+  outline: 2px solid var(--phosphor);
+  outline-offset: 0.18em;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .aboutCopy a:hover {
+    color: var(--phosphor);
+    text-decoration-color: var(--phosphor);
+  }
+}
+
 .aboutDetails {
   display: flex;
   flex-direction: column;
@@ -858,6 +882,7 @@
   .projectSignal i::after,
   .projectFooter i,
   .sectionAction a span,
+  .aboutCopy a,
   .contactBlock > a i {
     transition: none;
   }

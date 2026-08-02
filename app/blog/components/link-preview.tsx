@@ -11,6 +11,14 @@ type Preview = {
 };
 
 const knownPreviews: Record<string, Preview> = {
+  "en.wikipedia.org/wiki/Israel": {
+    title: "Israel — Wikipedia",
+    description: "History, geography, politics, and culture of Israel.",
+  },
+  "en.wikipedia.org/wiki/Setar": {
+    title: "Setar — Wikipedia",
+    description: "A traditional Persian stringed instrument played with the index finger.",
+  },
   "github.com/ramzxy/quarto": {
     title: "ChokerJoker / Quarto",
     description: "The award-winning Quarto solver and its full source code.",
@@ -128,4 +136,3 @@ export function LinkPreview({ url, children }: { url: string; children: ReactNod
     </span>
   );
 }
-

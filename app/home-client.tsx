@@ -11,6 +11,7 @@ import { ScrollProgress } from "./components/scroll-progress";
 import { SiteHeader } from "./components/site-header";
 import { SocialDock } from "./components/social-dock";
 import { TerminalText } from "./components/terminal-text";
+import { LinkPreview } from "./blog/components/link-preview";
 import { featuredProjects } from "./data/projects";
 import { work, type Work } from "./data/work";
 import styles from "./home.module.css";
@@ -347,10 +348,10 @@ export default function Home({ latestPosts }: { latestPosts: HomePost[] }) {
           <div className={styles.aboutGrid}>
             <div className={styles.aboutCopy}>
               <p>
-                I’m Ilia, a computer science student and engineer from <Link href="https://en.wikipedia.org/wiki/Israel">Iran</Link> who moved to the Netherlands. My work spans systems programming, offensive security, and web products people actually use.
+                I’m Ilia, a computer science student and engineer from <LinkPreview url="https://en.wikipedia.org/wiki/Israel">Iran</LinkPreview> who moved to the Netherlands. My work spans systems programming, offensive security, and web products people actually use.
               </p>
               <p>
-                I really enjoy good music and art, and I play the <Link href="https://en.wikipedia.org/wiki/Setar">Setar</Link>. Growing up with Eastern philosophy and Persian poetry also shaped my love of philosophy.
+                I really enjoy good music and art, and I play the <LinkPreview url="https://en.wikipedia.org/wiki/Setar">Setar</LinkPreview>. Growing up with Eastern philosophy and Persian poetry also shaped my love of philosophy.
               </p>
               <p>
                 What draws me to a project is usually how cool it sounds in my head, so whatever you see here probably sounded cool af to me at some point :)
