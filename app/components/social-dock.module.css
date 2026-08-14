@@ -1,168 +1,157 @@
-.ribbon {
+/* A printed contact index: service / handle pairs on shared rules, in the
+   same evidence-row language as the rest of the site. Inherits the sheet it
+   sits on via currentColor, so it works on paper and on black. */
+.dock {
+  position: relative;
   width: min(100%, 46rem);
-  min-height: 3.25rem;
-  display: flex;
-  align-items: stretch;
-  border-top: 1px solid var(--ash);
-  border-bottom: 1px solid var(--ash);
-  color: var(--text-muted);
 }
 
 .label {
-  flex: 0 0 auto;
   display: flex;
   align-items: center;
-  padding-inline: 0.8rem 1rem;
-  color: var(--text-muted);
+  min-height: 2.4rem;
+  color: color-mix(in srgb, currentColor 62%, transparent);
   font-family: var(--font-inktrap);
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   font-weight: 500;
+  letter-spacing: 0.04em;
 }
 
+/* Square, not round — the mark is stamped, not lit. */
 .label::before {
   content: "";
   width: 0.32rem;
   height: 0.32rem;
   margin-right: 0.5rem;
-  border-radius: 50%;
-  background: var(--phosphor);
+  background: var(--signal);
+  animation: dockPulse 2.6s steps(1, end) infinite;
 }
 
-.links {
-  min-width: 0;
-  flex: 1;
-  display: flex;
-  align-items: stretch;
+@keyframes dockPulse {
+  0%,
+  62% {
+    opacity: 1;
+  }
+  63%,
+  100% {
+    opacity: 0.15;
+  }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid color-mix(in srgb, currentColor 42%, transparent);
 }
 
 .link {
-  position: relative;
   min-width: 0;
-  flex: 1 1 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.42rem;
-  padding-inline: 0.7rem;
-  border-left: 1px solid color-mix(in srgb, var(--ash) 72%, transparent);
-  color: var(--text-muted);
-  font-family: var(--font-inktrap);
-  font-size: 0.75rem;
-  font-weight: 500;
-  white-space: nowrap;
-  transition: color 160ms var(--transition-smooth);
-}
-
-.link::after {
-  content: "";
-  position: absolute;
-  right: 0.65rem;
-  bottom: -1px;
-  left: 0.65rem;
-  height: 1px;
-  background: var(--phosphor);
-  transform: scaleX(0);
-  transform-origin: right;
-  transition: transform 180ms var(--transition-smooth);
-}
-
-.icon {
+  min-height: 2.9rem;
   display: grid;
-  place-items: center;
-  transition: color 160ms var(--transition-smooth);
+  grid-template-columns: minmax(4.75rem, auto) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding-inline: 0.15rem 0.4rem;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 26%, transparent);
+  color: inherit;
+  font-family: var(--font-inktrap);
+  font-size: 0.7rem;
+  font-weight: 500;
+  transition: background-color 150ms var(--transition-smooth), color 150ms var(--transition-smooth);
+}
+
+.link:nth-child(odd) {
+  padding-right: 1.25rem;
+}
+
+.link:nth-child(even) {
+  padding-left: 1.25rem;
+  border-left: 1px solid color-mix(in srgb, currentColor 26%, transparent);
+}
+
+.service {
+  color: color-mix(in srgb, currentColor 58%, transparent);
+}
+
+.handle {
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .link i {
-  width: 0.65rem;
-  flex: 0 0 0.65rem;
-  color: var(--phosphor);
-  font-size: 0.65rem;
+  color: var(--signal);
+  font-size: 0.68rem;
   font-style: normal;
   opacity: 0;
-  transform: translateX(-0.2rem);
-  transition:
-    opacity 140ms var(--transition-smooth),
-    transform 180ms var(--transition-smooth);
+  transform: translate(-0.2rem, 0.1rem);
+  transition: opacity 140ms var(--transition-smooth), transform 180ms var(--transition-smooth);
 }
 
 .link:hover,
 .link:focus-visible {
-  color: var(--text-bright);
-}
-
-.link:hover .icon,
-.link:focus-visible .icon {
-  color: var(--phosphor);
-}
-
-.link:hover::after,
-.link:focus-visible::after {
-  transform: scaleX(1);
-  transform-origin: left;
+  background: color-mix(in srgb, currentColor 8%, transparent);
+  color: inherit;
 }
 
 .link:hover i,
 .link:focus-visible i {
   opacity: 1;
-  transform: translateX(0);
+  transform: translate(0, 0);
 }
 
-@media (max-width: 720px) {
-  .ribbon {
-    width: min(100%, 26rem);
+@media (max-width: 520px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .label {
-    padding-inline: 0.65rem 0.8rem;
+  .link,
+  .link:nth-child(odd),
+  .link:nth-child(even) {
+    position: relative;
+    min-height: 4.1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0.12rem;
+    padding: 0.55rem 1.25rem 0.55rem 0.45rem;
   }
 
-  .links {
-    overflow-x: auto;
-    overscroll-behavior-inline: contain;
-    scroll-snap-type: x proximity;
-    scrollbar-width: none;
-  }
-
-  .links::-webkit-scrollbar {
-    display: none;
-  }
-
-  .link {
-    min-width: max-content;
-    flex: 0 0 auto;
-    padding-inline: 0.85rem;
-    scroll-snap-align: start;
-  }
-}
-
-@media (max-width: 420px) {
-  .ribbon {
-    width: calc(100vw - 2rem);
-  }
-
-  .label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
-  }
-
-  .links {
-    mask-image: linear-gradient(to right, #000 88%, transparent);
-  }
-
-  .link:first-child {
+  .link:nth-child(odd) {
     border-left: 0;
+  }
+
+  .link:nth-child(even) {
+    border-left: 1px solid color-mix(in srgb, currentColor 26%, transparent);
+  }
+
+  .service {
+    font-size: 0.58rem;
+  }
+
+  .handle {
+    width: 100%;
+    font-size: 0.68rem;
+  }
+
+  .link i {
+    position: absolute;
+    top: 0.65rem;
+    right: 0.45rem;
+    opacity: 0.62;
+    transform: none;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .link,
-  .icon,
-  .link::after,
   .link i {
     transition: none;
+  }
+
+  .label::before {
+    animation: none;
   }
 }

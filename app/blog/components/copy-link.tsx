@@ -3,18 +3,21 @@
 import { useState } from "react";
 
 export function CopyLink() {
-  const [copied, setCopied] = useState(false);
+  const [state, setState] = useState<"idle" | "copied" | "error">("idle");
 
   const copy = async () => {
-    await navigator.clipboard.writeText(window.location.href);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1600);
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setState("copied");
+    } catch {
+      setState("error");
+    }
+    window.setTimeout(() => setState("idle"), 1800);
   };
 
   return (
-    <button type="button" className="copy-link" onClick={copy}>
-      {copied ? "link copied" : "copy link"}
+    <button type="button" className="copy-link" onClick={copy} aria-live="polite">
+      {state === "copied" ? "link copied" : state === "error" ? "copy failed" : "copy link"}
     </button>
   );
 }
-

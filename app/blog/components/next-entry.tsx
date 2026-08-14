@@ -1,9 +1,6 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import { useRef, type CSSProperties } from "react";
+import type { CSSProperties } from "react";
 import type { BlogPostSummary } from "../../../lib/blog";
 
 type Props = {
@@ -21,59 +18,34 @@ function shortDate(date: string) {
 }
 
 export function NextEntry({ post, direction }: Props) {
-  const sectionRef = useRef<HTMLElement>(null);
-  const reduceMotion = useReducedMotion();
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end end"],
-  });
-  const mediaScale = useTransform(scrollYProgress, [0, 0.75], [0.94, 1]);
-  const contentY = useTransform(scrollYProgress, [0.15, 0.78], [36, 0]);
-  const contentOpacity = useTransform(scrollYProgress, [0.15, 0.58], [0.35, 1]);
-
   return (
-    <section
-      ref={sectionRef}
-      className="next-entry"
+    <aside
+      className="next-note"
       style={{ "--next-accent": post.accent } as CSSProperties}
-      aria-labelledby="next-entry-title"
+      aria-labelledby="next-note-title"
     >
-      <Link href={`/blog/${post.slug}`} className="next-entry__link">
-        <motion.div
-          className="next-entry__media"
-          style={{ scale: reduceMotion ? 1 : mediaScale }}
-        >
+      <Link href={`/blog/${post.slug}`} className="next-note__link">
+        <div className="next-note__media">
           {post.thumbnail && (
             <Image
               src={post.thumbnail}
               alt=""
               fill
-              quality={95}
-              sizes="100vw"
+              quality={82}
+              sizes="(max-width: 720px) 38vw, 25rem"
             />
           )}
-          <div className="next-entry__shade" />
-        </motion.div>
-
-        <motion.div
-          className="next-entry__content"
-          style={{
-            y: reduceMotion ? 0 : contentY,
-            opacity: reduceMotion ? 1 : contentOpacity,
-          }}
-        >
-          <div className="next-entry__meta">
-            <span>{direction === "older" ? "next entry" : "back toward newer"}</span>
-            <span>{post.categories[0] ?? "Writing"}</span>
+        </div>
+        <div className="next-note__copy">
+          <div className="next-note__meta">
+            <span>{direction === "older" ? "read next" : "newer note"}</span>
             <time dateTime={post.publishedAt}>{shortDate(post.publishedAt)}</time>
           </div>
-          <div className="next-entry__title-row">
-            <h2 id="next-entry-title">{post.title}</h2>
-            <span className="next-entry__arrow" aria-hidden>↗</span>
-          </div>
+          <h2 id="next-note-title">{post.title}</h2>
           <p>{post.description}</p>
-        </motion.div>
+        </div>
+        <span className="next-note__arrow" aria-hidden>↗</span>
       </Link>
-    </section>
+    </aside>
   );
 }

@@ -1,62 +1,65 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Moon, Sun } from "lucide-react";
+import styles from "./theme-toggle.module.css";
+
+type Theme = "dark" | "light";
+
+const getActiveTheme = (): Theme =>
+  document.documentElement.getAttribute("data-theme") === "light"
+    ? "light"
+    : "dark";
 
 export const ThemeToggle = () => {
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
-  const [mounted, setMounted] = useState(false);
+  // The visual state is driven by <html data-theme>, which is set by the
+  // blocking head script before first paint. React only tracks the value for
+  // the accessible label, so hydration cannot move or restyle the control.
+  const [theme, setTheme] = useState<Theme | null>(null);
 
   useEffect(() => {
-    setMounted(true);
-    const stored = localStorage.getItem("theme") as "dark" | "light" | null;
-    const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const initialTheme = stored || (systemPrefersDark ? "dark" : "light");
-    setTheme(initialTheme);
-    document.documentElement.setAttribute("data-theme", initialTheme);
+    setTheme(getActiveTheme());
+
+    const syncTheme = () => {
+      setTheme(getActiveTheme());
+    };
+    window.addEventListener("theme-change", syncTheme);
+    return () => window.removeEventListener("theme-change", syncTheme);
   }, []);
 
   const toggleTheme = () => {
-    const newTheme = theme === "dark" ? "light" : "dark";
+    const newTheme: Theme = getActiveTheme() === "dark" ? "light" : "dark";
     // Apply the transition class briefly so colors interpolate when the data
     // attribute swaps the CSS variables, then remove it so hover transitions
     // remain snappy.
     const root = document.documentElement;
     root.classList.add("theme-transitioning");
     setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
+    try {
+      localStorage.setItem("theme", newTheme);
+    } catch {}
     root.setAttribute("data-theme", newTheme);
     window.dispatchEvent(new CustomEvent("theme-change", { detail: newTheme }));
     window.setTimeout(() => root.classList.remove("theme-transitioning"), 380);
   };
 
-  if (!mounted) {
-    return (
-      <div className="w-10 h-10 rounded-lg bg-[var(--graphite)] border border-[var(--ash)]" />
-    );
-  }
+  const nextMode = theme === "light" ? "ink" : "paper";
 
   return (
-    <motion.button
+    <button
+      type="button"
       onClick={toggleTheme}
-      className="relative w-10 h-10 rounded-lg bg-[var(--graphite)] border border-[var(--ash)] text-[var(--text-dim)] transition-all duration-300 hover:border-[var(--phosphor)] hover:text-[var(--phosphor)] hover:shadow-[0_0_20px_var(--phosphor-glow)] overflow-hidden"
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+      className={styles.toggle}
+      aria-label={theme ? `Switch to ${nextMode} mode` : "Switch appearance"}
+      aria-pressed={theme === null ? undefined : theme === "light"}
     >
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={theme}
-          initial={{ y: -20, opacity: 0, rotate: -90 }}
-          animate={{ y: 0, opacity: 1, rotate: 0 }}
-          exit={{ y: 20, opacity: 0, rotate: 90 }}
-          transition={{ duration: 0.2 }}
-          className="absolute inset-0 flex items-center justify-center"
-        >
-          {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-        </motion.div>
-      </AnimatePresence>
-    </motion.button>
+      <span className={styles.plates} aria-hidden>
+        <i className={styles.inkPlate} />
+        <i className={styles.paperPlate} />
+      </span>
+      <span className={styles.labels} aria-hidden>
+        <span className={styles.inkLabel}>ink</span>
+        <span className={styles.paperLabel}>paper</span>
+      </span>
+    </button>
   );
 };

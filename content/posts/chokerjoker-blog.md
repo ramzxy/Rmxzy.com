@@ -1,5 +1,5 @@
 ---
-title: Building ChokerJoker, the award winning quarto solver
+title: ChokerJoker, the Quarto bot that changes its mind
 date: 2026-01-27
 description: We built a Quarto bot for a university competition and got a little carried away. It chokes out safe moves, then switches over to a perfect endgame solver.
 keywords: ChokerJoker, Quarto solver, alpha-beta pruning, game AI, Java, competitive programming, Ilia Mirzaali, rmxzy
@@ -10,7 +10,7 @@ tags:
     - "Alpha-Beta Pruning"
     - "Optimization"
     - "Competitive Programming"
-thumbnail: /images/chokerjoker-cover-v3.png
+thumbnail: /images/chokerjoker-cover-v3.webp
 accent: "#c74b32"
 categories:
   - Engineering
@@ -20,16 +20,16 @@ So I had to build a Quarto AI for a university competition, and I quickly ran in
 
 Naturally, I decided to do both. The result is **ChokerJoker**: an AI with a split personality. In the midgame, it plays like a strangler, slowly suffocating the opponent by minimizing their safe moves. Then, once the board gets sparse enough, it flips a switch and becomes a perfect endgame solver that calculates every possible outcome.
 
-In this post I'll walk through the whole thing: bitboards, Zobrist hashing, 32-way symmetry reduction, and why I spent way too long tweaking move ordering. If you want to skip ahead and just look at the code, the full project is on GitHub:
+The interesting bits are the bitboards, Zobrist hashing, 32-way symmetry reduction, and the embarrassing amount of time I spent tweaking move ordering. The full project is on GitHub:
 
 👉 **[https://github.com/ramzxy/quarto](https://github.com/ramzxy/quarto)**
 
 
-# Phase 1: The Strangler (Heuristic Midgame)
+# Phase 1: the strangler
 
 The first phase of ChokerJoker is all about **panic maximization**. The goal is to slowly choke the opponent by reducing their options until they're basically stuck.
 
-## The Core Heuristic
+## The core heuristic
 
 After a lot of testing (and I mean _a lot_), I settled on this evaluation formula:
 
@@ -43,14 +43,14 @@ Where:
 
 The weights (2.21 and 0.37) were hand-tuned through trial and error. Not the most scientific approach, but it worked. The idea is simple: **minimize the opponent's breathing room**. Fewer safe options = more mistakes.
 
-### Why This Works
+### Why this works
 
 If you've never played Quarto, here's what makes it weird: unlike chess, where you control your own pieces, in Quarto your _opponent_ chooses which piece you place. So the player giving the piece actually has more control than the player placing it.
 
 This means instead of trying to "win positions," the Strangler focuses on **controlling the piece selection**. If I can force the opponent into a situation where _every piece they give me_ is dangerous, I've basically already won even if the board looks neutral to a human.
 
 
-## Bitboard Representation
+## Bitboard representation
 
 One of the first things I did was throw out the object-based board representation and switch to **bitboards**. If you've ever written a chess engine, you know the drill.
 
@@ -97,7 +97,7 @@ private int getDangerSquares(int tall, int round, int solid, int dark,
 This drops the safety calculation from **O(Empty × Pieces × Lines)** to **O(Pieces × Lines)**. At depth 5, this optimization alone saved about 70% of evaluation time.
 
 
-## Iterative Deepening + Aspiration Windows
+## Iterative deepening and aspiration windows
 
 The Strangler uses iterative deepening, starting at depth 1 and working its way up to depth 5 (or until time runs out).
 
@@ -118,7 +118,7 @@ Once the board reaches 9 empty squares (or fewer), the Strangler steps aside and
 At this point, the game becomes fully solvable. There are at most **9! × 9!** positions left, which sounds huge until you realize…
 
 
-## Symmetry Reduction (32× State Space Collapse)
+## Symmetry reduction (32× fewer board states)
 
 Quarto has a _lot_ of symmetry. The board has 8-fold rotational/reflective symmetry (the dihedral group D4), which is standard stuff. But there are also **topological symmetries** — board transformations that preserve winning lines but aren't geometric rotations. These are way less obvious, and it took me a while to even convince myself they were valid.
 
@@ -151,7 +151,7 @@ private long computeCanonicalHash(int tall, int round, int solid, int dark,
 This collapses the state space by up to **32×**. Positions that look completely different to a human are treated as identical by the AI. The transposition table hit rate went from about 20% to 60% after adding this.
 
 
-## Piece Isomorphism (Because Why Stop There)
+## Piece isomorphism
 
 But wait, there's _more_ symmetry to exploit.
 
@@ -177,7 +177,7 @@ private int computeInversionMask(int dark, int tall, int round, int solid,
 Then I XOR every piece ID with this mask before hashing. This adds another ~2× reduction on top of the geometric symmetries.
 
 
-## Zobrist Hashing (Fast, Collision-Resistant)
+## Zobrist hashing
 
 To make symmetry detection fast, I use **Zobrist hashing**, a technique borrowed from chess engines.
 
@@ -203,7 +203,7 @@ hash ^= Z_NEXT_PIECE[pieceToPlace];
 XOR is fast, reversible (updating the hash after a move is trivial), and has excellent collision resistance.
 
 
-## Transposition Table (4 Million Entries)
+## A 4-million-entry transposition table
 
 All those canonical hashes feed into a **transposition table**, a giant lookup table that stores previously searched positions:
 
@@ -234,7 +234,7 @@ if (TT_KEYS[ttIndex] == canonicalHash) {
 With the 32× symmetry reduction, the transposition table gets _way_ more hits than it would in a normal search. Positions that were searched in different branches (but are actually the same after symmetry) all map to the same table entry.
 
 
-## Principal Variation Search (PVS)
+## Principal variation search (PVS)
 
 The God Engine uses **Principal Variation Search**, an optimization of Alpha-Beta that assumes the first move you try is usually the best one. Sounds risky, but if your move ordering is decent, it pays off big time.
 
@@ -261,7 +261,7 @@ if (firstMove) {
 When move ordering is good (which it usually is, thanks to the transposition table), this causes way more cutoffs than plain Alpha-Beta.
 
 
-## Late Move Reduction (LMR)
+## Late move reduction (LMR)
 
 If I've already searched 3+ moves at a node and none of them improved `alpha`, the remaining moves are probably bad. So I search them at **reduced depth**:
 
@@ -281,7 +281,7 @@ if (reduction > 0 && val > alpha) {
 
 Late moves almost never matter, and LMR lets me skip most of their subtrees. In practice, this cut the average node count by about 40%. Free performance.
 
-## Move Ordering (The Actual Secret Sauce)
+## Move ordering is where it really matters
 
 Here's the thing though all these optimizations (PVS, LMR, Alpha-Beta cutoffs) only work if **good moves are searched first**. If I search the best move last, I get zero cutoffs and waste all my time. Move ordering is everything.
 

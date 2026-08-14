@@ -2,127 +2,122 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import dynamic from "next/dynamic";
-import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
-import { useAsciiText, ansiShadow } from "react-ascii-text";
-import { useEffect, useRef, useState, type CSSProperties, type RefObject } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { ansiShadow, useAsciiText } from "react-ascii-text";
+import { useEffect, useState, type CSSProperties, type RefObject } from "react";
 import type { BlogPostSummary } from "../lib/blog";
+import { ConsoleEasterEgg } from "./components/console-easter-egg";
 import { ScrollProgress } from "./components/scroll-progress";
+import { SiteFooter } from "./components/site-footer";
 import { SiteHeader } from "./components/site-header";
 import { SocialDock } from "./components/social-dock";
 import { TerminalText } from "./components/terminal-text";
 import { LinkPreview } from "./blog/components/link-preview";
-import { featuredProjects } from "./data/projects";
+import { featuredProjects, otherProjects, type Project } from "./data/projects";
 import { work, type Work } from "./data/work";
 import styles from "./home.module.css";
 
-const Particles = dynamic(() => import("./components/particles"), { ssr: false });
-
 type HomePost = Omit<BlogPostSummary, "searchText">;
 
-const projectSignals: Record<string, { input: string; output: string }> = {
-  khor: { input: "syscalls", output: "sound" },
-  cedis: { input: "RESP bytes", output: "state" },
-  emuchip8: { input: "opcode", output: "pixels" },
-};
+/* The hero cutout is drawn from the fankit's figure plates and changes on each
+   visit. Intrinsic sizes differ a lot between them (1.07 to 1.85), so the
+   poster is sized by height in CSS and every plate reads at the same scale. */
+const heroPlates = [
+  { src: "/art/dedsec/plates/screamer-10.webp", width: 1000, height: 605 },
+  { src: "/art/dedsec/plates/screamer-11.webp", width: 1000, height: 861 },
+  { src: "/art/dedsec/plates/screamer-12.webp", width: 1000, height: 677 },
+  { src: "/art/dedsec/plates/screamer-13.webp", width: 1000, height: 801 },
+  { src: "/art/dedsec/plates/screamer-14.webp", width: 1000, height: 816 },
+  { src: "/art/dedsec/plates/mummy-01.webp", width: 1000, height: 931 },
+  { src: "/art/dedsec/plates/mummy-05.webp", width: 1000, height: 559 },
+  { src: "/art/dedsec/plates/mummy-07.webp", width: 1000, height: 540 },
+] as const;
 
-const scrollSpring = {
-  stiffness: 110,
-  damping: 26,
-  mass: 0.45,
-  restDelta: 0.001,
-};
-
-type FeaturedProject = (typeof featuredProjects)[number];
-
-function WorkCase({ item, index }: { item: Work; index: number }) {
-  const articleRef = useRef<HTMLElement>(null);
-  const reduceMotion = useReducedMotion();
-  const { scrollYProgress } = useScroll({
-    target: articleRef,
-    offset: ["start end", "end start"],
-  });
-  const easedProgress = useSpring(scrollYProgress, scrollSpring);
-  const indexY = useTransform(easedProgress, [0, 1], [10, -12]);
-  const identityY = useTransform(easedProgress, [0, 1], [24, -18]);
-  const detailsY = useTransform(easedProgress, [0, 1], [10, -8]);
-
+function WorkRow({ item, index }: { item: Work; index: number }) {
   return (
-    <motion.article
-      ref={articleRef}
-      initial={reduceMotion ? false : { opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-8%" }}
-      transition={{ duration: 0.58, delay: index * 0.07, ease: [0.16, 1, 0.3, 1] }}
-    >
-      <Link href={item.url} target="_blank" rel="noopener noreferrer" className={styles.workEntry}>
-        <motion.span
-          className={styles.workIndex}
-          style={{ y: reduceMotion ? 0 : indexY }}
-          aria-hidden
-        >
+    <article className={styles.workRow}>
+      <Link
+        href={item.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={styles.workRowLink}
+      >
+        <span className={styles.workIndex}>
           {String(index + 1).padStart(2, "0")}
-        </motion.span>
-        <motion.div className={styles.workIdentity} style={{ y: reduceMotion ? 0 : identityY }}>
-          <span className={styles.workRole}>{item.role}</span>
+        </span>
+        <div className={styles.workIdentity}>
           <h3>{item.title}</h3>
-        </motion.div>
-        <motion.div className={styles.workDetails} style={{ y: reduceMotion ? 0 : detailsY }}>
-          <p>{item.description}</p>
-          <div className={styles.workFooter}>
-            <div className={styles.workTags}>{item.tech.slice(0, 3).map((tech) => <span key={tech}>{tech}</span>)}</div>
-            <span className={styles.workOpen}>visit <i aria-hidden>↗</i></span>
-          </div>
-        </motion.div>
+          <span>{item.role}</span>
+        </div>
+        <p>{item.description}</p>
+        <div className={styles.techLine}>
+          {item.tech.map((tech) => (
+            <span key={tech}>{tech}</span>
+          ))}
+        </div>
+        <span className={styles.rowArrow} aria-hidden>
+          ↗
+        </span>
       </Link>
-    </motion.article>
+    </article>
   );
 }
 
-function ProjectEntry({ project, index }: { project: FeaturedProject; index: number }) {
-  const reduceMotion = useReducedMotion();
-  const isPrimary = index === 0;
+function ProjectPanel({ project, index }: { project: Project; index: number }) {
+  const href = project.github ?? project.demo;
+  if (!href) return null;
 
   return (
-    <motion.article
-      initial={reduceMotion ? false : {
-        opacity: 0,
-        x: isPrimary ? 0 : 24,
-        y: isPrimary ? 30 : 0,
-      }}
-      whileInView={{ opacity: 1, x: 0, y: 0 }}
-      viewport={{ once: true, margin: "-6%" }}
-      transition={{
-        duration: 0.58,
-        delay: index * 0.09,
-        ease: [0.16, 1, 0.3, 1],
-      }}
+    <article
+      className={`${styles.projectPanel} ${index === 0 ? styles.projectLead : ""}`}
     >
-      <Link href={project.github ?? project.demo ?? "#"} target="_blank" rel="noopener noreferrer" className={styles.projectTile}>
-        <div className={styles.projectTopline}>
-          <span>{String(index + 3).padStart(2, "0")}</span>
-          <span>{project.tech[0]}</span>
-        </div>
-        <div className={styles.projectCopy}>
-          <h3>{project.title}</h3>
+      <Link
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={styles.projectPanelLink}
+      >
+        <span className={styles.projectNumber}>
+          {String(project.index).padStart(2, "0")}
+        </span>
+        <div className={styles.projectText}>
+          <div className={styles.projectTitleLine}>
+            <h3>{project.title}</h3>
+            <span>source</span>
+          </div>
           <p>{project.description}</p>
+          <div className={styles.techLine}>
+            {project.tech.map((tech) => (
+              <span key={tech}>{tech}</span>
+            ))}
+          </div>
         </div>
-        <div className={styles.projectSignal} aria-hidden>
-          <span>{projectSignals[project.id]?.input ?? "input"}</span>
-          <motion.i
-            initial={reduceMotion ? false : { scaleX: 0 }}
-            whileInView={{ scaleX: 1 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.48, delay: 0.22 + index * 0.08, ease: [0.16, 1, 0.3, 1] }}
-          />
-          <span>{projectSignals[project.id]?.output ?? "output"}</span>
-        </div>
-        <div className={styles.projectFooter}>
-          <span>{project.tech.slice(0, 3).join(" · ")}</span>
-          <span>source <i aria-hidden>↗</i></span>
-        </div>
+        <span className={styles.projectArrow} aria-hidden>
+          ↗
+        </span>
       </Link>
-    </motion.article>
+    </article>
+  );
+}
+
+function ProjectIndexRow({ project }: { project: Project }) {
+  const href = project.github ?? project.demo;
+  if (!href) return null;
+
+  return (
+    <article className={styles.projectIndexRow}>
+      <Link href={href} target="_blank" rel="noopener noreferrer">
+        <span>{String(project.index).padStart(2, "0")}</span>
+        <h3>{project.title}</h3>
+        <p>{project.tagline ?? project.description}</p>
+        <div className={styles.techLine}>
+          {project.tech.slice(0, 3).map((tech) => (
+            <span key={tech}>{tech}</span>
+          ))}
+        </div>
+        <i aria-hidden>↗</i>
+      </Link>
+    </article>
   );
 }
 
@@ -134,272 +129,363 @@ function shortDate(date: string) {
   }).format(new Date(date));
 }
 
-function SectionHeading({
-  index,
-  eyebrow,
-  title,
-  description,
-}: {
-  index: string;
-  eyebrow: string;
-  title: string;
-  description?: string;
-}) {
-  const reduceMotion = useReducedMotion();
-
+function PostRow({ post, index }: { post: HomePost; index: number }) {
   return (
-    <header className={styles.sectionHeading}>
-      <motion.div
-        className={styles.sectionHeadingMeta}
-        initial={reduceMotion ? false : { opacity: 0, transform: "translateY(0.75rem)" }}
-        whileInView={{ opacity: 1, transform: "translateY(0)" }}
-        viewport={{ once: true, margin: "-10%" }}
-        transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-      >
-        <span>{index}</span>
-        <span>{eyebrow}</span>
-      </motion.div>
-      <motion.div
-        initial={reduceMotion ? false : { opacity: 0, transform: "translateY(1.25rem)" }}
-        whileInView={{ opacity: 1, transform: "translateY(0)" }}
-        viewport={{ once: true, margin: "-10%" }}
-        transition={{ duration: 0.55, delay: 0.04, ease: [0.16, 1, 0.3, 1] }}
-      >
-        <h2>{title}</h2>
-        {description && <p>{description}</p>}
-      </motion.div>
-    </header>
+    <article className={styles.postRow}>
+      <Link href={`/blog/${post.slug}`}>
+        <span className={styles.postIndex}>
+          {String(index + 1).padStart(2, "0")}
+        </span>
+        {post.thumbnail && (
+          <div className={styles.postImage}>
+            <Image
+              src={post.thumbnail}
+              alt=""
+              fill
+              quality={85}
+              sizes="(max-width: 620px) calc(100vw - 4rem), (max-width: 820px) 9rem, 11.5rem"
+            />
+          </div>
+        )}
+        <div className={styles.postBody}>
+          <h3>{post.title}</h3>
+          <p>{post.description}</p>
+        </div>
+        <div className={styles.postMeta}>
+          <span className={styles.postCategory}>
+            {post.categories[0] ?? "note"}
+          </span>
+          <time className={styles.postDate} dateTime={post.publishedAt}>
+            {shortDate(post.publishedAt)}
+          </time>
+          <span className={styles.postReading}>{post.readingTime} min</span>
+        </div>
+        <span className={styles.rowArrow} aria-hidden>
+          ↗
+        </span>
+      </Link>
+    </article>
   );
 }
 
 export default function Home({ latestPosts }: { latestPosts: HomePost[] }) {
-  const [ambienceReady, setAmbienceReady] = useState(false);
   const reduceMotion = useReducedMotion();
   const asciiTextRef = useAsciiText({
-    animationCharacters: "▒░█",
+    animationCharacters: "▒░█<>/",
     animationCharacterSpacing: 1,
-    animationDelay: 5000,
+    animationDelay: 4200,
     animationDirection: "down",
-    animationInterval: 20,
+    animationInterval: 22,
     animationLoop: !reduceMotion,
-    animationSpeed: 80,
+    animationSpeed: 72,
     font: ansiShadow,
-    text: ["R M X Z Y"],
+    text: ["RMXZY"],
   }) as RefObject<HTMLPreElement>;
 
+  /* Chosen after mount rather than during render: picking at render time makes
+     the server and client disagree on which plate is in the markup, which is a
+     hydration mismatch. Holding it back one paint also avoids fetching one
+     plate for the server's guess and a second for the shuffle. */
+  const [plate, setPlate] = useState<(typeof heroPlates)[number] | null>(null);
+
   useEffect(() => {
-    if (reduceMotion) return;
-
-    if ("requestIdleCallback" in window) {
-      const idleId = window.requestIdleCallback(() => setAmbienceReady(true), { timeout: 700 });
-      return () => window.cancelIdleCallback(idleId);
-    }
-
-    const timeoutId = globalThis.setTimeout(() => setAmbienceReady(true), 250);
-    return () => globalThis.clearTimeout(timeoutId);
-  }, [reduceMotion]);
+    setPlate(heroPlates[Math.floor(Math.random() * heroPlates.length)]);
+  }, []);
 
   return (
-    <main id="main-content" className={styles.page}>
-      <a href="#main-content" className="skip-link">Skip to content</a>
+    <main id="main-content" className={styles.page} tabIndex={-1}>
+      <a href="#main-content" className="skip-link">
+        Skip to content
+      </a>
       <ScrollProgress />
-
       <SiteHeader />
 
-      <section className={styles.hero}>
-        {!reduceMotion && ambienceReady && (
-          <div className={styles.heroParticles} aria-hidden>
-            <Particles className={styles.particleCanvas} quantity={220} />
-          </div>
-        )}
-
+      <section className={styles.hero} aria-labelledby="hero-title">
+        <div className={styles.heroGrid} aria-hidden />
         <div className={styles.shell}>
-          <motion.div
-            className={styles.heroStatus}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            <span><i /> open to interesting work</span>
-            <span>Enschede, NL · <Link href="/resume.pdf" target="_blank" rel="noopener noreferrer">resume ↗</Link></span>
-          </motion.div>
-
-          <motion.div
-            className={styles.asciiStage}
-            initial={{ opacity: 0, scale: 0.97 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.75, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <h1 className="sr-only">Ilia Mirzaali — software engineer and hacker, known online as rmxzy</h1>
-            <pre
-              ref={reduceMotion ? undefined : asciiTextRef}
-              aria-label="rmxzy"
-              className={styles.asciiWordmark}
-            >{`██████╗ ███╗   ███╗██╗  ██╗███████╗██╗   ██╗
-██╔══██╗████╗ ████║╚██╗██╔╝╚══███╔╝╚██╗ ██╔╝
-██████╔╝██╔████╔██║ ╚███╔╝   ███╔╝  ╚████╔╝
-██╔══██╗██║╚██╔╝██║ ██╔██╗  ███╔╝    ╚██╔╝
-██║  ██║██║ ╚═╝ ██║██╔╝ ██╗███████╗   ██║
-╚═╝  ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝╚══════╝   ╚═╝`}</pre>
-
-            <div className={styles.heroTagline}>
-              {reduceMotion ? (
-                <span>hacker · systems engineer · fullstack</span>
-              ) : (
-                <TerminalText text="hacker · systems engineer · fullstack" speed={40} delay={900} />
-              )}
-            </div>
-
-            <SocialDock className={styles.heroSocialDock} />
-          </motion.div>
-
-          <Link href="#work" className={styles.scrollCue}>
-            <span>next</span>
-            <motion.i
-              aria-hidden
-              animate={reduceMotion ? undefined : { y: [0, 3, 0] }}
-              transition={{ duration: 1.4, repeat: Infinity, ease: [0.65, 0, 0.35, 1] }}
-            >↓</motion.i>
-            <strong>work</strong>
-          </Link>
-        </div>
-      </section>
-
-      <section id="work" className={styles.section}>
-        <div className={styles.shell}>
-          <SectionHeading
-            index="01"
-            eyebrow="selected work"
-            title="The work that stuck."
-            description="Selection of my works that are actually deployed and used."
-          />
-
-          <div className={styles.workList}>
-            {work.map((item, index) => (
-              <WorkCase key={item.id} item={item} index={index} />
-            ))}
+          <div className={styles.heroMeta}>
+            <span>Ilia Mirzaali / rmxzy</span>
+            <span>52° 13′ 21″ N, 6° 53′ 33″ E</span>
+            <Link href="mailto:me@rmxzy.com">me@rmxzy.com ↗</Link>
           </div>
 
-          <div id="projects" className={styles.projectGroup}>
-            <div className={styles.subheading}>
-              <span>03—05 / built out of curiosity</span>
-              <Link href="https://github.com/ramzxy" target="_blank" rel="noopener noreferrer">all repositories ↗</Link>
-            </div>
-
-            <div className={styles.projectShelf}>
-              {featuredProjects.map((project, index) => (
-                <ProjectEntry key={project.id} project={project} index={index} />
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section id="writing" className={`${styles.section} ${styles.writingSection}`}>
-        <div className={styles.shell}>
-          <SectionHeading
-            index="02"
-            eyebrow="recent writing"
-            title="Stories I like to share"
-            description="Security research, systems programming, and projects that were too cool to keep silent."
-          />
-
-          <div className={styles.writingList}>
-            {latestPosts.map((post, index) => (
-              <motion.article
-                key={post.slug}
-                style={{ "--entry-accent": post.accent } as CSSProperties}
-                initial={{ opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-8%" }}
-                transition={{ duration: 0.4, delay: index * 0.06, ease: [0.16, 1, 0.3, 1] }}
+          <div className={styles.heroStage}>
+            {plate && (
+              <div
+                className={styles.heroPoster}
+                style={{ "--poster-plate": `url("${plate.src}")` } as CSSProperties}
+                aria-hidden
               >
-                <Link href={`/blog/${post.slug}`} className={styles.writingRow}>
-                  {post.thumbnail && (
-                    <div className={styles.writingImage}>
-                      <Image src={post.thumbnail} alt="" fill quality={95} sizes="(max-width: 700px) 100vw, 240px" />
-                    </div>
-                  )}
-                  <div className={styles.writingCopy}>
-                    <div className={styles.writingMeta}>
-                      <span>{post.categories[0] ?? "Writing"}</span>
-                      <time dateTime={post.publishedAt}>{shortDate(post.publishedAt)}</time>
-                      <span>{post.readingTime} min</span>
-                    </div>
-                    <h3>{post.title}</h3>
-                    <p>{post.description}</p>
-                  </div>
-                  <span className={styles.rowArrow} aria-hidden>↗</span>
-                </Link>
-              </motion.article>
-            ))}
-          </div>
+                <Image
+                  src={plate.src}
+                  alt=""
+                  width={plate.width}
+                  height={plate.height}
+                  priority
+                  sizes="(max-width: 620px) 118vw, (max-width: 820px) 78vw, 42vw"
+                />
+              </div>
+            )}
 
-          <div className={styles.sectionAction}>
-            <Link href="/blog">open all writing <span>↗</span></Link>
+            <motion.div
+              className={styles.heroCopy}
+              initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <h1
+                id="hero-title"
+                className={styles.heroWordmark}
+                aria-label="rmxzy"
+              >
+                <pre ref={asciiTextRef} aria-hidden />
+              </h1>
+              <p aria-label="hacker · systems engineer · fullstack">
+                {reduceMotion ? (
+                  <span>hacker · systems engineer · fullstack</span>
+                ) : (
+                  <span aria-hidden>
+                    <TerminalText
+                      text="hacker · systems engineer · fullstack"
+                      speed={40}
+                      delay={900}
+                    />
+                  </span>
+                )}
+              </p>
+              <div className={styles.heroActions}>
+                <Link href="#work">work ↓</Link>
+                <Link href="/blog">writing ↗</Link>
+                <Link
+                  href="https://github.com/ramzxy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  GitHub ↗
+                </Link>
+              </div>
+            </motion.div>
           </div>
         </div>
       </section>
 
-      <section id="about" className={`${styles.section} ${styles.aboutSection}`}>
+      <section id="work" className={styles.workSection}>
         <div className={styles.shell}>
-          <SectionHeading index="03" eyebrow="about" title="About me" />
+          <header className={styles.sectionHeader}>
+            <span>01</span>
+            <h2>Work</h2>
+            <div className={styles.sectionAside}>
+              <em className={styles.sectionCount}>{work.length} selected roles</em>
+            </div>
+          </header>
+
+          <div className={styles.workRows}>
+            {work.map((item, index) => (
+              <WorkRow key={item.id} item={item} index={index} />
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.tagBandWrap} aria-hidden>
+          <div className={styles.tagBand}>
+            <Image
+              src="/art/rmxzy-tag-clean.webp"
+              alt=""
+              width={1899}
+              height={828}
+              sizes="100vw"
+            />
+          </div>
+          <Image
+            src="/art/dedsec/hand-reach.webp"
+            alt=""
+            width={814}
+            height={942}
+            sizes="(max-width: 820px) 30vw, 15rem"
+            className={styles.tagHand}
+          />
+        </div>
+
+        <div id="projects" className={`${styles.shell} ${styles.codeSection}`}>
+          <header className={styles.sectionHeader}>
+            <span>02</span>
+            <h2>Projects</h2>
+            <div className={styles.sectionAside}>
+              <em className={styles.sectionCount}>
+                {featuredProjects.length + otherProjects.length} indexed
+              </em>
+              <Link
+                href="https://github.com/ramzxy"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                all repositories ↗
+              </Link>
+            </div>
+          </header>
+
+          <div className={styles.projectCanvas}>
+            {featuredProjects.map((project, index) => (
+              <ProjectPanel key={project.id} project={project} index={index} />
+            ))}
+          </div>
+
+          <div className={styles.projectIndex}>
+            {otherProjects.map((project) => (
+              <ProjectIndexRow key={project.id} project={project} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className={styles.reaperBreak} aria-hidden>
+        <Image
+          src="/art/dedsec/reaper-05.webp"
+          alt=""
+          width={1200}
+          height={815}
+          sizes="(max-width: 620px) 42rem, (max-width: 820px) 44rem, 58rem"
+        />
+      </div>
+
+      <section id="writing" className={styles.writingSection}>
+        <div className={styles.shell}>
+          <header
+            className={`${styles.sectionHeader} ${styles.sectionHeaderDark}`}
+          >
+            <span>03</span>
+            <h2>Notes</h2>
+            <div className={styles.sectionAside}>
+              <em className={styles.sectionCount}>
+                {latestPosts.length} recent
+              </em>
+              <Link href="/blog">full archive ↗</Link>
+            </div>
+          </header>
+
+          <div className={styles.postList}>
+            <div className={styles.postListHeader} aria-hidden="true">
+              <span>no.</span>
+              <span>cover</span>
+              <span>note</span>
+              <span>topic</span>
+              <span>date</span>
+              <span>read</span>
+              <span />
+            </div>
+            {latestPosts.map((post, index) => (
+              <PostRow key={post.slug} post={post} index={index} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="about" className={styles.aboutSection}>
+        <div className={styles.shell}>
+          <header className={styles.sectionHeader}>
+            <span>04</span>
+            <h2>About me</h2>
+          </header>
 
           <div className={styles.aboutGrid}>
-            <div className={styles.aboutCopy}>
-              <p>
-                I’m Ilia, a computer science student and engineer from <LinkPreview url="https://en.wikipedia.org/wiki/Israel">Iran</LinkPreview> who moved to the Netherlands. My work spans systems programming, offensive security, and web products people actually use.
-              </p>
-              <p>
-                I really enjoy good music and art, and I play the <LinkPreview url="https://en.wikipedia.org/wiki/Setar">Setar</LinkPreview>. Growing up with Eastern philosophy and Persian poetry also shaped my love of philosophy.
-              </p>
-              <p>
-                What draws me to a project is usually how cool it sounds in my head, so whatever you see here probably sounded cool af to me at some point :)
-              </p>
+            <div className={styles.aboutArt} aria-hidden>
+              <Image
+                src="/art/dedsec/brain-jar.webp"
+                alt=""
+                width={504}
+                height={665}
+                sizes="(max-width: 620px) 9rem, (max-width: 820px) 10rem, 15rem"
+              />
             </div>
 
-            <div className={styles.aboutDetails}>
-              <div>
-                <span>languages</span>
-                <p>C · C++ · Java · Python · TypeScript</p>
-              </div>
-              <div>
-                <span>systems / security</span>
-                <p>Linux Internals · eBPF · containerization </p>
-              </div>
-              <div>
-                <span>networking / backend</span>
-                <p>express · Boost.Asio · FastAPI · PostgreSQL · Redis · mongodb</p>
-              </div>
-              <div>
-                <span>web / infra</span>
-                <p>Vue · React · Next.js · Docker · AWS · Cloudflare</p>
-              </div>
-              <div>
-                <span>elsewhere</span>
+            <div className={styles.aboutCopy}>
+              <div className={styles.aboutBio}>
                 <p>
-                  <Link href="https://github.com/ramzxy" target="_blank" rel="noopener noreferrer">GitHub ↗</Link>
-                  <Link href="https://linkedin.com/in/rmxzy" target="_blank" rel="noopener noreferrer">LinkedIn ↗</Link>
-                  <Link href="/resume.pdf" target="_blank" rel="noopener noreferrer">Resume ↗</Link>
+                  I’m Ilia, a computer science student and engineer from{" "}
+                  <LinkPreview url="https://en.wikipedia.org/wiki/Israel">
+                    Iran
+                  </LinkPreview>{" "}
+                  who moved to the Netherlands. My work spans systems
+                  programming, offensive security, and web products people
+                  actually use.
+                </p>
+                <p>
+                  I really enjoy good music and art, and I play the{" "}
+                  <LinkPreview url="https://en.wikipedia.org/wiki/Setar">
+                    Setar
+                  </LinkPreview>
+                  . Growing up with Eastern philosophy and Persian poetry also
+                  shaped my love of philosophy.
+                </p>
+                <p>
+                  What draws me to a project is usually how cool it sounds in my
+                  head, so whatever you see here probably sounded cool af to me
+                  at some point :)
                 </p>
               </div>
+
+              <dl className={styles.aboutFacts}>
+                <div>
+                  <dt>languages</dt>
+                  <dd>C · C++ · Java · Python · TypeScript</dd>
+                </div>
+                <div>
+                  <dt>systems / security</dt>
+                  <dd>Linux internals · eBPF · containerization</dd>
+                </div>
+                <div>
+                  <dt>networking / backend</dt>
+                  <dd>
+                    Express · Boost.Asio · FastAPI · PostgreSQL · Redis ·
+                    MongoDB
+                  </dd>
+                </div>
+                <div>
+                  <dt>web / infra</dt>
+                  <dd>Vue · React · Next.js · Docker · AWS · Cloudflare</dd>
+                </div>
+                <div>
+                  <dt>elsewhere</dt>
+                  <dd className={styles.aboutLinks}>
+                    <Link
+                      href="https://github.com/ramzxy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      GitHub ↗
+                    </Link>
+                    <Link
+                      href="https://linkedin.com/in/rmxzy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      LinkedIn ↗
+                    </Link>
+                    <Link
+                      href="/Resume.pdf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Resume ↗
+                    </Link>
+                  </dd>
+                </div>
+              </dl>
             </div>
           </div>
+        </div>
 
-          <div id="connect" className={styles.contactBlock}>
-            <span>Have something worth building or breaking?</span>
-            <Link href="mailto:me@rmxzy.com">me@rmxzy.com <i>↗</i></Link>
-          </div>
+        <div id="connect" className={`${styles.shell} ${styles.contactRow}`}>
+          <Link href="mailto:me@rmxzy.com" className={styles.emailLink}>
+            me@rmxzy.com <span>↗</span>
+          </Link>
+          <SocialDock className={styles.contactDock} />
         </div>
       </section>
 
-      <footer className={styles.footer}>
-        <div className={styles.shell}>
-          <span>© {new Date().getFullYear()} Ilia Mirzaali</span>
-          <span>rmxzy, on the internet</span>
-        </div>
-      </footer>
+      <SiteFooter />
 
+      <ConsoleEasterEgg />
     </main>
   );
 }

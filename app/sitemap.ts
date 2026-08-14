@@ -2,19 +2,21 @@ import type { MetadataRoute } from "next";
 import { getAllPostSummaries } from "../lib/blog";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const now = new Date();
   const posts = getAllPostSummaries();
+  const latestUpdate = posts[0]
+    ? new Date(posts[0].updatedAt ?? posts[0].publishedAt)
+    : new Date("2024-01-01T00:00:00.000Z");
 
   return [
     {
       url: "https://rmxzy.com",
-      lastModified: now,
+      lastModified: latestUpdate,
       changeFrequency: "monthly",
       priority: 1.0,
     },
     {
       url: "https://rmxzy.com/blog",
-      lastModified: posts[0] ? new Date(posts[0].publishedAt) : now,
+      lastModified: latestUpdate,
       changeFrequency: "weekly",
       priority: 0.8,
     },

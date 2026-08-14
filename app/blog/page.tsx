@@ -7,7 +7,7 @@ export default function BlogPage() {
   const latest = posts[0];
 
   return (
-    <main id="blog-content" className="blog-main blog-main--animated">
+    <main id="blog-content" className="blog-index">
       {latest && <ScrollBlogIntro latest={latest} />}
       <div className="blog-archive-wrap">
         <BlogExplorer posts={posts} />

@@ -1,5 +1,5 @@
 ---
-title: Coding a PE Loader in C
+title: I wrote a PE loader to see what Windows does first
 date: 2024-09-02
 description: I wanted to know what Windows actually does with an EXE before it runs, so I wrote a small PE loader in C and pulled the whole process apart.
 keywords: PE loader, Portable Executable, C, WinAPI, malware development, Ilia Mirzaali, rmxzy, process injection, DLL injection
@@ -8,26 +8,26 @@ tags:
     - "C"
     - "MalwareDev"
     - "WinAPI"
-thumbnail: /images/pe-loader-cover-v3.png
+thumbnail: /images/pe-loader-cover-v3.webp
 accent: "#bd4f36"
 categories:
   - Security
 ---
-# Why Write a PE Loader?
+# Why I wrote it
 
-PE loader malware exploits the Windows Portable Executable format to inject and execute malicious code stealthily. It operates in-memory, often evading detection by antivirus software. Using techniques like process hollowing and DLL injection, it enables attackers to launch ransomware, steal data, or move laterally within networks. Strengthened endpoint protection and careful file handling are key defenses against this threat.
+I knew the rough story of what happened after double-clicking an EXE, but too much of it was still magic. So I wrote a small loader in C and made myself deal with the headers, sections, imports, relocations, and entry point directly.
 
-## What does it do exactly?
+## What it actually does
 
-A PE Loader is a program that loads, parses, and executes a PE file (such as an `EXE` or `DLL`). The following code implements a simple PE Loader that reads a PE file, performs necessary loading steps, including reading headers, allocating memory, mapping sections, resolving imports, applying relocations, and executing the PE file.
-
-
-## Code Implementation
-
-Below is the full implementation of a simple PE Loader in C using the Win32 API.
+A PE loader maps an `EXE` or `DLL` into memory and gets it ready to run. Mine reads the headers, allocates the image, maps each section, resolves imports, applies relocations, and finally jumps to the entry point.
 
 
-### **Main Structure**
+## The implementation
+
+This is the full implementation using the Win32 API.
+
+
+### Main structure
 
 ```c
 #define _CRT_SECURE_NO_WARNINGS

@@ -1,0 +1,138 @@
+.toggle {
+  position: relative;
+  min-width: 6.2rem;
+  height: 2.75rem;
+  display: grid;
+  grid-template-columns: 1.3rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0 0.5rem 0 0.3rem;
+  border: 0;
+  border-bottom: 1px solid var(--ash);
+  background: transparent;
+  color: var(--text-bright);
+  appearance: none;
+  text-align: left;
+  font-family: var(--font-inktrap);
+  font-size: 0.66rem;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.055em;
+  text-transform: uppercase;
+  isolation: isolate;
+  transition:
+    color 140ms var(--transition-smooth),
+    transform 100ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.toggle::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background: var(--signal);
+  transform: scaleX(0.24);
+  transform-origin: left;
+  transition: transform 180ms var(--transition-smooth);
+}
+
+.plates {
+  position: relative;
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.plates i {
+  position: absolute;
+  width: 0.82rem;
+  height: 0.82rem;
+  border: 1px solid;
+  transition:
+    transform 220ms cubic-bezier(0.65, 0, 0.35, 1),
+    box-shadow 220ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.inkPlate {
+  z-index: 2;
+  right: 0;
+  bottom: 0;
+  border-color: color-mix(in srgb, var(--physical-paper) 72%, transparent);
+  background: var(--physical-black);
+  box-shadow: 2px 2px 0 var(--signal);
+  transform: translate(0, 0);
+}
+
+.paperPlate {
+  z-index: 1;
+  top: 0;
+  left: 0;
+  border-color: color-mix(in srgb, var(--physical-black) 72%, transparent);
+  background: var(--physical-paper);
+  transform: translate(0, 0);
+}
+
+.labels {
+  min-width: 3.4rem;
+  display: grid;
+  align-items: center;
+  overflow: hidden;
+}
+
+.labels span {
+  grid-area: 1 / 1;
+  transition:
+    opacity 140ms var(--transition-smooth),
+    transform 180ms var(--transition-smooth);
+}
+
+.paperLabel {
+  opacity: 0;
+  transform: translateY(0.35rem);
+}
+
+:global([data-theme="light"]) .inkPlate {
+  z-index: 1;
+  box-shadow: none;
+  transform: translate(-0.22rem, -0.22rem);
+}
+
+:global([data-theme="light"]) .paperPlate {
+  z-index: 2;
+  box-shadow: 2px 2px 0 var(--signal);
+  transform: translate(0.22rem, 0.22rem);
+}
+
+:global([data-theme="light"]) .inkLabel {
+  opacity: 0;
+  transform: translateY(-0.35rem);
+}
+
+:global([data-theme="light"]) .paperLabel {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.toggle:hover,
+.toggle:focus-visible {
+  color: var(--signal);
+}
+
+.toggle:hover::after,
+.toggle:focus-visible::after {
+  transform: scaleX(1);
+}
+
+.toggle:active {
+  transform: scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toggle,
+  .toggle::after,
+  .plates i,
+  .labels span {
+    transition: none;
+  }
+}

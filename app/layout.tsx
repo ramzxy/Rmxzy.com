@@ -3,12 +3,17 @@ import { Metadata } from "next";
 import { Analytics } from "./components/analytics";
 
 export const metadata: Metadata = {
+  viewport: "width=device-width, initial-scale=1, viewport-fit=cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#e8e1d1" },
+    { media: "(prefers-color-scheme: dark)", color: "#111011" },
+  ],
   title: {
-    default: "Ilia Mirzaali — Software Engineer & Hacker (rmxzy)",
+    default: "rmxzy",
     template: "%s | Ilia Mirzaali (rmxzy)",
   },
   description:
-    "Ilia Mirzaali (rmxzy) — software engineer in the Netherlands. CS student building low-level systems in C++ (Cedis, eBPF, VPN clients, emulators) and shipping full-stack web.",
+    "Ilia Mirzaali, known as rmxzy. I build systems software, security tools, websites, and the occasional project that turns Linux kernel events into sound.",
   metadataBase: new URL("https://rmxzy.com"),
   keywords: [
     "Ilia Mirzaali",
@@ -32,11 +37,11 @@ export const metadata: Metadata = {
     canonical: "https://rmxzy.com",
   },
   openGraph: {
-    title: "Ilia Mirzaali — Software Engineer & Hacker (rmxzy)",
+    title: "rmxzy",
     description:
-      "Ilia Mirzaali (rmxzy) — software engineer working on distributed systems, low-level programming, and full-stack web.",
+      "Systems software, security tools, websites, and odd experiments by Ilia Mirzaali.",
     url: "https://rmxzy.com",
-    siteName: "Ilia Mirzaali — rmxzy",
+    siteName: "rmxzy",
     locale: "en_US",
     type: "website",
   },
@@ -54,12 +59,14 @@ export const metadata: Metadata = {
   twitter: {
     title: "Ilia Mirzaali — rmxzy",
     description:
-      "Software engineer working on distributed systems, low-level programming, and full-stack web.",
+      "Systems software, security tools, websites, and odd experiments.",
     card: "summary_large_image",
     creator: "@ramsyTheDream",
   },
   icons: {
+    icon: "/favicon.png",
     shortcut: "/favicon.png",
+    apple: "/favicon.png",
   },
 };
 
@@ -118,11 +125,23 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("theme");if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.setAttribute("data-theme",t)}catch(e){document.documentElement.setAttribute("data-theme","dark")}})()`,
+          }}
+        />
         <link
           rel="preload"
           href="/fonts/Whyte-Inktrap-500.woff2"
           as="font"
           type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        <link
+          rel="preload"
+          href="/fonts/CalSans-SemiBold.ttf"
+          as="font"
+          type="font/ttf"
           crossOrigin="anonymous"
         />
         <Analytics />
@@ -135,7 +154,11 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
       </head>
-      <body className={process.env.NODE_ENV === "development" ? "debug-screens" : undefined}>
+      <body
+        className={
+          process.env.NODE_ENV === "development" ? "debug-screens" : undefined
+        }
+      >
         {children}
       </body>
     </html>

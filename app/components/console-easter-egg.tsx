@@ -18,9 +18,9 @@ export const ConsoleEasterEgg = () => {
     if (w.__rmxzyHi) return;
     w.__rmxzyHi = true;
 
-    const phosphor = "#39ff14";
-    const dim = "#a1a1aa";
-    const big = `color:${phosphor};font-family:monospace;font-size:11px;line-height:1.1;text-shadow:0 0 10px ${phosphor}80`;
+    const phosphor = "#ff2d7e";
+    const dim = "#a3a3ad";
+    const big = `color:${phosphor};font-family:monospace;font-size:11px;line-height:1.1`;
     const tag = `color:${phosphor};font-weight:700`;
     const text = `color:${dim};font-family:monospace`;
 
@@ -42,8 +42,8 @@ export const ConsoleEasterEgg = () => {
       text,
     );
     console.log(
-      "%cps: try ⌘K or press ? for the keyboard map.",
-      "color:#52525b;font-family:monospace;font-style:italic",
+      "%cps: ⌘K opens the command palette.",
+      "color:#55555f;font-family:monospace;font-style:italic",
     );
     /* eslint-enable no-console */
   }, []);

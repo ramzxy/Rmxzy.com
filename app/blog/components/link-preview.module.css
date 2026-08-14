@@ -1,0 +1,143 @@
+.anchor {
+  display: inline;
+}
+
+.card {
+  --preview-stock: var(--physical-paper);
+  --preview-ink: var(--physical-black);
+
+  position: fixed;
+  z-index: 120;
+  width: min(22rem, calc(100vw - 1.5rem));
+  overflow: hidden;
+  border: 1px solid var(--preview-ink);
+  background:
+    radial-gradient(
+        circle at center,
+        color-mix(in srgb, var(--preview-ink) 28%, transparent) 0 0.5px,
+        transparent 0.6px
+      )
+      0 0 / var(--halftone-size) var(--halftone-size),
+    var(--preview-stock);
+  color: var(--preview-ink);
+  box-shadow:
+    0.38rem 0.34rem 0 var(--physical-signal),
+    0 1.2rem 3.5rem color-mix(in srgb, var(--physical-black) 38%, transparent);
+  transform-origin: center bottom;
+  pointer-events: none;
+  isolation: isolate;
+  contain: layout paint style;
+}
+
+.above {
+  translate: -50% -100%;
+  transform-origin: center bottom;
+}
+
+.below {
+  translate: -50% 0;
+  transform-origin: center top;
+}
+
+:global([data-theme="light"]) .card {
+  --preview-stock: var(--physical-black);
+  --preview-ink: var(--physical-paper);
+}
+
+.bar {
+  min-height: 2.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-inline: 0.75rem;
+  border-bottom: 3px solid var(--physical-signal);
+  background: var(--preview-ink);
+  color: var(--preview-stock);
+  font-family: var(--font-inktrap);
+  font-size: 0.62rem;
+  letter-spacing: 0.035em;
+}
+
+.bar > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bar > span:last-child {
+  flex: 0 0 auto;
+  color: var(--physical-signal);
+  font-size: 0.82rem;
+}
+
+.image {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 8.5;
+  overflow: hidden;
+  border-bottom: 1px solid color-mix(in srgb, var(--preview-ink) 38%, transparent);
+  background: var(--preview-ink);
+}
+
+.image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle, rgba(0, 0, 0, 0.52) 0 0.55px, transparent 0.65px)
+      0 0 / 3px 3px,
+    color-mix(in srgb, var(--physical-signal) 12%, transparent);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.4) contrast(1.1);
+}
+
+.copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.9rem 1rem 1.05rem;
+}
+
+.card[data-has-image="false"] .copy {
+  min-height: 7rem;
+  justify-content: center;
+  padding-block: 1.2rem 1.35rem;
+}
+
+.copy strong {
+  font-family: var(--font-display);
+  font-size: 1.08rem;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: 0.005em;
+}
+
+.copy > span {
+  max-width: 38ch;
+  color: color-mix(in srgb, var(--preview-ink) 68%, transparent);
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .card {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    box-shadow: 0.24rem 0.22rem 0 var(--physical-signal);
+  }
+}

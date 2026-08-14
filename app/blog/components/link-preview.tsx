@@ -1,14 +1,24 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { useId, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import { createPortal } from "react-dom";
+import styles from "./link-preview.module.css";
 
 type Preview = {
   title: string;
   description: string;
   image?: string;
 };
+
+type Placement = "above" | "below";
 
 const knownPreviews: Record<string, Preview> = {
   "en.wikipedia.org/wiki/Israel": {
@@ -21,7 +31,7 @@ const knownPreviews: Record<string, Preview> = {
   },
   "github.com/ramzxy/quarto": {
     title: "ChokerJoker / Quarto",
-    description: "The award-winning Quarto solver and its full source code.",
+    description: "The Quarto solver, game engine, and its full source code.",
     image: "/images/quarto.jpg",
   },
   "github.com/ramzxy/ilia.beer": {
@@ -32,7 +42,7 @@ const knownPreviews: Record<string, Preview> = {
   "ilia.beer": {
     title: "ilia.beer",
     description: "Buy Ilia a beer and get a personal video toast in return.",
-    image: "/images/beer.png",
+    image: "/images/ilia-beer-cover-v3.webp",
   },
   "2025.bapc.eu": {
     title: "BAPC 2025",
@@ -43,96 +53,172 @@ const knownPreviews: Record<string, Preview> = {
 function previewFor(url: string): { domain: string; preview: Preview } {
   try {
     const parsed = new URL(url);
-    const key = `${parsed.hostname.replace(/^www\./, "")}${parsed.pathname.replace(/\/$/, "")}`;
     const domain = parsed.hostname.replace(/^www\./, "");
+    const key = `${domain}${parsed.pathname.replace(/\/$/, "")}`;
+
     return {
       domain,
       preview: knownPreviews[key] ?? knownPreviews[domain] ?? {
         title: domain,
-        description: "Open this source in a new tab.",
+        description: "Open the original page in a new tab.",
       },
     };
   } catch {
     return {
       domain: url,
-      preview: { title: url, description: "Open this source in a new tab." },
+      preview: {
+        title: url,
+        description: "Open the original page in a new tab.",
+      },
     };
   }
 }
 
-export function LinkPreview({ url, children }: { url: string; children: ReactNode }) {
+export function LinkPreview({
+  url,
+  children,
+}: {
+  url: string;
+  children: ReactNode;
+}) {
   const anchorRef = useRef<HTMLAnchorElement>(null);
+  const openTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const tooltipId = useId();
   const reduceMotion = useReducedMotion();
   const [open, setOpen] = useState(false);
+  const [placement, setPlacement] = useState<Placement>("above");
   const [position, setPosition] = useState({ left: 0, top: 0 });
   const { domain, preview } = previewFor(url);
 
-  const show = () => {
-    const rect = anchorRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const halfCard = Math.min(164, window.innerWidth / 2 - 12);
-    setPosition({
-      left: Math.max(halfCard, Math.min(window.innerWidth - halfCard, rect.left + rect.width / 2)),
-      top: rect.top - 12,
-    });
-    setOpen(true);
+  const clearOpenTimer = () => {
+    if (!openTimer.current) return;
+    clearTimeout(openTimer.current);
+    openTimer.current = null;
   };
 
+  const show = (delay = 0) => {
+    clearOpenTimer();
+
+    const reveal = () => {
+      const rect = anchorRef.current?.getBoundingClientRect();
+      if (!rect) return;
+
+      const halfCard = Math.min(176, window.innerWidth / 2 - 12);
+      const nextPlacement: Placement = rect.top > Math.min(300, window.innerHeight * 0.42)
+        ? "above"
+        : "below";
+
+      setPosition({
+        left: Math.max(
+          halfCard,
+          Math.min(window.innerWidth - halfCard, rect.left + rect.width / 2),
+        ),
+        top: nextPlacement === "above" ? rect.top - 12 : rect.bottom + 12,
+      });
+      setPlacement(nextPlacement);
+      setOpen(true);
+    };
+
+    if (delay === 0) reveal();
+    else openTimer.current = setTimeout(reveal, delay);
+  };
+
+  const hide = () => {
+    clearOpenTimer();
+    setOpen(false);
+  };
+
+  useEffect(() => {
+    return clearOpenTimer;
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const close = () => setOpen(false);
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") close();
+    };
+
+    window.addEventListener("scroll", close, { passive: true });
+    window.addEventListener("resize", close);
+    window.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      window.removeEventListener("scroll", close);
+      window.removeEventListener("resize", close);
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [open]);
+
+  const revealOffset = placement === "above" ? 8 : -8;
+  const cardStyle = {
+    left: position.left,
+    top: position.top,
+  } as CSSProperties;
+
   return (
-    <span className="link-preview-anchor">
+    <span className={styles.anchor}>
       <a
         ref={anchorRef}
         href={url}
         target="_blank"
-        rel="noreferrer"
+        rel="noopener noreferrer"
         aria-describedby={open ? tooltipId : undefined}
-        onMouseEnter={show}
-        onMouseLeave={() => setOpen(false)}
-        onFocus={show}
-        onBlur={() => setOpen(false)}
+        onMouseEnter={() => show(90)}
+        onMouseLeave={hide}
+        onFocus={() => show()}
+        onBlur={hide}
       >
         {children}
       </a>
 
-      {typeof document !== "undefined" && createPortal(
-        <AnimatePresence>
-          {open && (
-            <motion.span
-              id={tooltipId}
-              role="tooltip"
-              className="link-preview-card"
-              style={{ left: position.left, top: position.top }}
-              initial={reduceMotion ? false : { opacity: 0, y: 8, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 4, scale: 0.98 }}
-              transition={{ duration: reduceMotion ? 0 : 0.18, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <span className="link-preview-card__bar">
-                <span>{domain}</span>
-                <span aria-hidden>↗</span>
-              </span>
-              {preview.image ? (
-                <span className="link-preview-card__image">
-                  <img src={preview.image} alt="" />
+      {typeof document !== "undefined" &&
+        createPortal(
+          <AnimatePresence>
+            {open && (
+              <motion.span
+                id={tooltipId}
+                role="tooltip"
+                className={`${styles.card} ${styles[placement]}`}
+                data-has-image={preview.image ? "true" : "false"}
+                style={cardStyle}
+                initial={
+                  reduceMotion
+                    ? false
+                    : { opacity: 0, y: revealOffset, scale: 0.985 }
+                }
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={
+                  reduceMotion
+                    ? { opacity: 0 }
+                    : { opacity: 0, y: revealOffset / 2, scale: 0.99 }
+                }
+                transition={{
+                  duration: reduceMotion ? 0 : 0.18,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
+              >
+                <span className={styles.bar}>
+                  <span>{domain}</span>
+                  <span aria-hidden>↗</span>
                 </span>
-              ) : (
-                <span className="link-preview-card__fallback" aria-hidden>
-                  <span>$ open {domain}</span>
-                  <i />
-                  <i />
-                  <i />
+
+                {preview.image && (
+                  <span className={styles.image} aria-hidden>
+                    <img src={preview.image} alt="" />
+                  </span>
+                )}
+
+                <span className={styles.copy}>
+                  <strong>{preview.title}</strong>
+                  <span>{preview.description}</span>
                 </span>
-              )}
-              <span className="link-preview-card__copy">
-                <strong>{preview.title}</strong>
-                <span>{preview.description}</span>
-              </span>
-            </motion.span>
-          )}
-        </AnimatePresence>,
-        document.body,
-      )}
+              </motion.span>
+            )}
+          </AnimatePresence>,
+          document.body,
+        )}
     </span>
   );
 }

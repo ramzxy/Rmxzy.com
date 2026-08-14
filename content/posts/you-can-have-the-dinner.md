@@ -17,7 +17,7 @@ categories:
 
 > **Disclosure note:** Identifying details, vendor names, and accepted AE Titles are intentionally omitted.
 
-## The Bet
+## The bet
 
 Ever since I first watched *Mr. Robot*, or any hacker-related show, the coolest part has always been when someone challenges the protagonist to hack a place and they act like it isn't even a challenge. Well, last week I finally had the chance to play into that.
 
@@ -27,7 +27,7 @@ Almost a week into my much-needed vacation, my dad sent me a link to a website o
 
 That was all I needed to hear to throw everything I had at it. It was no longer about having a quick poke around. It was about maintaining the aura in front of the guy and winning my dad the bet.
 
-## The Website Held Up
+## The website held up
 
 Opening the site, all I could see was a simple WordPress website for a hospital. No complicated form submissions, no login beyond the usual admin panel. Just a mostly static website. In all honesty, this broke my spirit a bit. There are only so many ways into a current WordPress installation, and exhausting each one made the playing field smaller.
 
@@ -35,7 +35,7 @@ I checked the `wp-admin` directory, ran a few credential checks, and kept WPScan
 
 The only obvious option left was a password audit against the admin user. I prepared a targeted wordlist and left a sprayer running on my Raspberry Pi back home, with a small script checking the results and notifying me if anything changed.
 
-## Changing the Playing Field
+## Changing the playing field
 
 Now all I had to do was wait. I hated that. The whole thing seemed to depend on luck. I couldn't sit there waiting to hit the brute-force lottery and then call it a "hack."
 
@@ -47,7 +47,7 @@ Finally, a new fight.
 
 It wasn't a web server, and it all looked new to me, so I started researching.
 
-## PACS on Port 104
+## PACS on port 104
 
 **PACS** stands for Picture Archiving and Communication System. It stores medical imaging studies and the patient information attached to them. It doesn't use typical HTTP, either: scanners and clinical workstations communicate through **DICOM**, or Digital Imaging and Communications in Medicine. Normally, this traffic stays inside the clinical network or passes through a tightly restricted gateway with hardened authentication.
 
@@ -98,7 +98,7 @@ Fucking hell. This was pretty bad.
 
 That was enough. I stopped there. There was no reason to collect the archive or retrieve patient images just to prove the point. I counted the results by date range, masked identifiers before recording evidence, and made no changes to the clinical system.
 
-## You Can Have the Dinner
+## You can have the dinner
 
 After I had cooled down, I collected the redacted evidence for the report and sent my dad one final message:
 

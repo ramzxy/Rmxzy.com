@@ -19,6 +19,7 @@ import { ArticleScrollIntro } from "../components/article-scroll-intro";
 import { LinkPreview } from "../components/link-preview";
 import { TableOfContents } from "../components/table-of-contents";
 import { ArticleReadingFrame } from "../components/article-reading-frame";
+import { ArticleEngagement } from "../components/article-engagement";
 import { NextEntry } from "../components/next-entry";
 
 type Props = {
@@ -34,6 +35,9 @@ export function generateStaticParams() {
 export function generateMetadata({ params }: Props): Metadata {
   const post = getPostBySlug(params.slug);
   if (!post) return {};
+  const previewImage = post.thumbnail
+    ? new URL(post.thumbnail, "https://rmxzy.com").toString()
+    : undefined;
 
   return {
     title: post.title,
@@ -50,13 +54,13 @@ export function generateMetadata({ params }: Props): Metadata {
       modifiedTime: post.updatedAt,
       authors: ["Ilia Mirzaali"],
       tags: post.tags,
-      images: post.thumbnail ? [{ url: post.thumbnail, alt: post.title }] : undefined,
+      images: previewImage ? [{ url: previewImage, alt: post.title }] : undefined,
     },
     twitter: {
       card: "summary_large_image",
       title: post.title,
       description: post.description,
-      images: post.thumbnail ? [post.thumbnail] : undefined,
+      images: previewImage ? [previewImage] : undefined,
     },
   };
 }
@@ -70,7 +74,7 @@ const markdownComponents: Components = {
     return <Link href={href} {...props}>{children}</Link>;
   },
   img({ node, src, alt, ...props }) {
-    return <img src={typeof src === "string" ? src : undefined} alt={alt ?? ""} loading="lazy" {...props} />;
+    return <img src={typeof src === "string" ? src : undefined} alt={alt ?? ""} loading="lazy" decoding="async" {...props} />;
   },
   pre({ node, children }) {
     return <CodeBlock>{children}</CodeBlock>;
@@ -93,7 +97,9 @@ export default function ArticlePage({ params }: Props) {
     "@type": "BlogPosting",
     headline: post.title,
     description: post.description,
-    image: post.thumbnail ? `https://rmxzy.com${post.thumbnail}` : undefined,
+    image: post.thumbnail
+      ? new URL(post.thumbnail, "https://rmxzy.com").toString()
+      : undefined,
     datePublished: post.publishedAt,
     dateModified: post.updatedAt ?? post.publishedAt,
     mainEntityOfPage: canonicalUrl,
@@ -165,6 +171,8 @@ export default function ArticlePage({ params }: Props) {
                 </ReactMarkdown>
               </div>
 
+              <ArticleEngagement slug={post.slug} />
+
               <footer className="article-end">
                 <div>
                   <span className="eyebrow">filed under</span>
@@ -190,12 +198,6 @@ export default function ArticlePage({ params }: Props) {
 
       {nextPost && <NextEntry post={nextPost} direction={nextDirection} />}
 
-      <nav className="article-after-links" aria-label="More writing">
-        <Link href="/blog">← all writing</Link>
-        {older && newer && (
-          <Link href={`/blog/${newer.slug}`}>previous entry: {newer.title} →</Link>
-        )}
-      </nav>
     </main>
   );
 }

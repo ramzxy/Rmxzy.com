@@ -71,28 +71,30 @@ export function ArticleReadingFrame({ items, children }: Props) {
 
         {items.length > 0 && (
           <nav className={`mobile-article-nav${open ? " is-open" : ""}`} aria-label="Article sections">
-            <div className="mobile-article-nav__panel" id="mobile-article-sections">
-              <ol>
-                {items.map((item, index) => (
-                  <li key={item.id} data-depth={item.depth}>
-                    <a
-                      href={`#${item.id}`}
-                      className={activeId === item.id ? "is-active" : undefined}
-                      onClick={() => setOpen(false)}
-                    >
-                      <span>{String(index + 1).padStart(2, "0")}</span>
-                      {item.text}
-                    </a>
-                  </li>
-                ))}
-              </ol>
-            </div>
+            {open && (
+              <div className="mobile-article-nav__panel" id="mobile-article-sections">
+                <ol>
+                  {items.map((item, index) => (
+                    <li key={item.id} data-depth={item.depth}>
+                      <a
+                        href={`#${item.id}`}
+                        className={activeId === item.id ? "is-active" : undefined}
+                        onClick={() => setOpen(false)}
+                      >
+                        <span>{String(index + 1).padStart(2, "0")}</span>
+                        {item.text}
+                      </a>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            )}
 
             <button
               type="button"
               className="mobile-article-nav__trigger"
               aria-expanded={open}
-              aria-controls="mobile-article-sections"
+              aria-controls={open ? "mobile-article-sections" : undefined}
               onClick={() => setOpen((current) => !current)}
             >
               <span className="mobile-article-nav__current">

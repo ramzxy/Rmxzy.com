@@ -1,893 +1,1707 @@
 .page {
-  min-height: 100vh;
-  overflow-x: hidden;
+  min-height: 100dvh;
+  overflow: hidden;
   background: var(--obsidian);
+  color: var(--text-bright);
 }
 
 .page a:focus-visible,
 .page button:focus-visible {
-  outline: 2px solid var(--phosphor);
+  outline: 3px solid var(--signal);
   outline-offset: 4px;
 }
 
 .shell {
-  width: min(calc(100% - 3rem), 72rem);
+  width: min(calc(100% - 3rem), 84rem);
   margin-inline: auto;
 }
 
 .hero {
   position: relative;
-  min-height: 94svh;
-  display: flex;
-  align-items: stretch;
-  padding-top: 4.5rem;
+  padding-top: calc(4.5rem + env(safe-area-inset-top));
   overflow: hidden;
+  isolation: isolate;
+  background: var(--obsidian);
 }
 
-.hero .shell {
+.heroGrid {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  opacity: 0.46;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--ash) 52%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--ash) 52%, transparent) 1px, transparent 1px);
+  background-size: clamp(3.5rem, 7vw, 6.5rem) clamp(3.5rem, 7vw, 6.5rem);
+  mask-image: linear-gradient(to bottom, #000 0%, transparent 92%);
+}
+
+.heroMeta {
+  /* The cutout is a positioned layer that now reaches higher up the hero; the
+     meta row has to be raised out of its way. */
   position: relative;
   z-index: 2;
+  min-height: 3.25rem;
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 1rem;
+  border-bottom: 1px solid var(--ash);
+  color: var(--text-muted);
+  font-family: var(--font-inktrap);
+  font-size: 0.7rem;
+  letter-spacing: 0.025em;
 }
 
-.heroParticles {
+.heroMeta span:nth-child(2) {
+  justify-self: center;
+}
+
+.heroMeta a {
+  justify-self: end;
+  /* The row is already 3.25rem tall; stretching the link into it turns an
+     18px-tall target into a full-height one without moving anything. */
+  align-self: stretch;
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-muted);
+}
+
+.heroStage {
+  /* Shared with the poster so the cutout's bottom edge lands exactly on the
+     hero's own bottom edge — the dark/paper boundary — however this padding
+     is tuned. */
+  --stage-pad-bottom: clamp(2rem, 5vw, 4.5rem);
+
+  position: relative;
+  /* Shorter than it was, which lifts the dark/paper cut line up the page and
+     brings it closer to the wordmark. */
+  min-height: clamp(28rem, 58vh, 37rem);
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: center;
+  padding-block: clamp(1.5rem, 3.5vw, 3rem) var(--stage-pad-bottom);
+}
+
+/* SCREAMER_10 is treated as one oversized cutout, not a poster. The masked
+   signal pass beneath it is the only overprint and stays deliberately rough. */
+/* Sized by height rather than width: the plates range from 1.07 to 1.85 in
+   aspect, so a shared width would make the tall ones tower over the wide ones.
+   Fixing the height keeps every figure at the same apparent scale, and the box
+   shrink-wraps it, with a cap so the widest plates cannot reach into the copy. */
+/* Stood on the section boundary rather than floated in the middle: the figure
+   runs off the bottom of the hero and `overflow: hidden` slices it exactly
+   where the dark sheet meets the paper one, the same cut as the reaper break. */
+.heroPoster {
   position: absolute;
-  z-index: 0;
-  inset: 0;
-  opacity: 0.72;
+  z-index: 1;
+  top: auto;
+  bottom: calc(-1 * var(--stage-pad-bottom));
+  right: clamp(-10rem, -7vw, -4rem);
+  /* Nearly the full height of the stage, so the figure reaches up level with
+     the wordmark instead of sitting below it. */
+  height: clamp(27rem, 60vh, 39rem);
+  max-width: min(56vw, 50rem);
+  transform: none;
   pointer-events: none;
-  contain: strict;
 }
 
-.particleCanvas,
-.particleCanvas canvas {
-  width: 100%;
-  height: 100%;
+/* The signal underprint takes the plate from a custom property so it follows
+   whichever cutout was drawn; `contain` on both passes keeps them in register
+   whatever the aspect ratio. */
+.heroPoster::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--signal-deep);
+  -webkit-mask: var(--poster-plate) center / contain no-repeat;
+  mask: var(--poster-plate) center / contain no-repeat;
+  transform: translate(0.8rem, 0.55rem) rotate(0.4deg);
+  opacity: 0.86;
+}
+
+.heroPoster img {
+  position: relative;
+  z-index: 1;
   display: block;
-}
-
-.heroStatus {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 2rem;
-  color: var(--text-dim);
-  font-family: var(--font-inktrap);
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.heroStatus span:first-child {
-  display: flex;
-  align-items: center;
-  gap: 0.55rem;
-}
-
-.heroStatus i {
-  width: 0.42rem;
-  height: 0.42rem;
-  border-radius: 50%;
-  background: var(--phosphor);
-}
-
-.heroStatus a {
-  color: var(--text-dim);
-}
-
-.heroStatus a:hover {
-  color: var(--phosphor);
-}
-
-.asciiStage {
-  align-self: center;
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  justify-content: center;
-  padding-block: clamp(5rem, 12vh, 8rem);
-  text-align: center;
-}
-
-.sectionHeadingMeta,
-.subheading,
-.writingMeta,
-.aboutDetails span,
-.contactBlock > span,
-.footer {
-  font-family: var(--font-inktrap);
-  font-weight: 500;
-}
-
-.asciiWordmark {
+  width: auto;
   max-width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  filter: contrast(1.08);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .heroPoster {
+    animation: posterSettle 950ms var(--transition-smooth) 120ms both;
+  }
+}
+
+@keyframes posterSettle {
+  from {
+    transform: translateX(1.5rem);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.heroCopy {
+  position: relative;
+  z-index: 2;
+  grid-column: 1 / 9;
+  grid-row: 1;
+  align-self: center;
+  /* Nudged down the stage so the wordmark sits against the figure's mass
+     rather than above it. Centring halves the margin, so this moves the block
+     by about half what it reads as. */
+  margin-top: clamp(2rem, 7vh, 5.5rem);
+  padding-block: 2rem;
+}
+
+/* The RMXZY wordmark: the old ascii glitch-and-rebuild, reprinted. The block
+   glyphs scramble and settle on a loop (react-ascii-text drives the pre),
+   and the whole slab carries a signal ink pass out of register below it. */
+.heroWordmark {
+  margin: 0;
+}
+
+.heroWordmark pre {
   overflow: visible;
   color: var(--text-bright);
   font-family: var(--font-mono);
-  font-size: clamp(0.36rem, 1.05vw, 0.92rem);
-  line-height: 1;
-  letter-spacing: -0.035em;
-  text-shadow:
-    0 0 0.75rem var(--phosphor-glow),
-    0 0 2.5rem var(--phosphor-glow);
+  font-size: clamp(0.62rem, 1.9vw, 1.34rem);
+  font-weight: 600;
+  line-height: 1.12;
   white-space: pre;
-  user-select: none;
+  text-shadow: 0.26em 0.2em 0 var(--signal-deep);
 }
 
-.heroTagline {
-  min-height: 1.8rem;
-  margin-top: 2rem;
-  color: var(--text-dim);
-  font-size: clamp(0.88rem, 1.6vw, 1.05rem);
+:global([data-theme="light"]) .heroWordmark pre {
+  text-shadow: 0.26em 0.2em 0 var(--signal);
 }
 
-.heroSocialDock {
-  margin-top: 2rem;
-}
-
-.scrollCue {
-  justify-self: center;
-  min-height: 3rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
+/* Edge credit, set in the sheet's outer margin. Pinned to a vw position it
+   sat inside the copy column and ran straight through the headline and the
+   links; it is only shown once the margin is genuinely wide enough to hold
+   it, and it is anchored to that margin rather than to a percentage. */
+.heroEdge {
+  position: absolute;
+  z-index: 1;
+  top: 55%;
+  left: max(0.75rem, calc((100vw - 84rem) / 2 - 1.9rem));
+  transform: translateY(-50%) rotate(180deg);
+  padding-block: 0.6rem;
+  background: var(--obsidian);
+  writing-mode: vertical-rl;
   color: var(--text-ghost);
   font-family: var(--font-inktrap);
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: 0.58rem;
+  letter-spacing: 0.09em;
+  white-space: nowrap;
 }
 
-.scrollCue i {
-  color: var(--phosphor);
-  font-style: normal;
+@media (max-width: 1500px) {
+  .heroEdge {
+    display: none;
+  }
 }
 
-.scrollCue strong {
+.heroCopy > p {
+  width: fit-content;
+  max-width: 100%;
+  min-height: 2.75rem;
+  display: flex;
+  align-items: center;
+  margin-top: 1.5rem;
+  padding: 0.8rem 1rem;
+  background: var(--obsidian);
   color: var(--text-medium);
-  font-weight: 500;
+  font-size: 1rem;
+  line-height: 1.4;
+  letter-spacing: 0.015em;
+  white-space: nowrap;
 }
 
-.scrollCue:hover,
-.scrollCue:hover strong {
-  color: var(--text-bright);
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 1.5rem;
+  margin-top: 1rem;
+  padding-left: 1rem;
+  font-family: var(--font-inktrap);
+  font-size: 0.72rem;
 }
 
-.sectionAction a {
+.heroActions a {
   min-height: 2.75rem;
   display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
-  border-bottom: 1px solid var(--text-dim);
-  color: var(--text-bright);
-  font-family: var(--font-inktrap);
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.sectionAction a span {
-  color: var(--phosphor);
-  transition: transform 180ms var(--transition-smooth);
-}
-
-.sectionAction a:hover span {
-  transform: translate(0.2rem, -0.1rem);
-}
-
-.section {
-  scroll-margin-top: 4.5rem;
-  padding-block: clamp(6rem, 12vw, 10rem);
-  content-visibility: auto;
-  contain-intrinsic-size: auto 58rem;
-}
-
-.sectionHeading {
-  display: grid;
-  grid-template-columns: 8rem minmax(0, 1fr);
-  gap: clamp(2rem, 6vw, 6rem);
-  margin-bottom: clamp(3.5rem, 6vw, 5rem);
-}
-
-.sectionHeadingMeta {
-  display: flex;
-  gap: 0.75rem;
-  padding-top: 0.55rem;
-  color: var(--text-dim);
-  font-size: 0.75rem;
-}
-
-.sectionHeadingMeta span:first-child {
-  color: var(--phosphor);
-}
-
-.sectionHeading h2 {
-  max-width: 13ch;
-  font-family: var(--font-display);
-  font-size: clamp(2.8rem, 6vw, 5.6rem);
-  font-weight: 500;
-  line-height: 0.95;
-  letter-spacing: -0.045em;
-  text-wrap: balance;
-}
-
-.sectionHeading p {
-  max-width: 40rem;
-  margin-top: 1.35rem;
-  color: var(--text-medium);
-  font-size: 1.05rem;
-  line-height: 1.7;
-  text-wrap: pretty;
-}
-
-.workList,
-.writingList {
-  border-top: 1px solid var(--ash);
-}
-
-.workList article,
-.writingList article {
   border-bottom: 1px solid var(--ash);
-}
-
-.workList article,
-.projectShelf article {
-  contain: paint;
-}
-
-.workEntry {
-  position: relative;
-  display: grid;
-  grid-template-columns: clamp(3.75rem, 7vw, 5.75rem) minmax(15rem, 0.9fr) minmax(20rem, 1.1fr);
-  gap: clamp(1.5rem, 4vw, 4rem);
-  min-height: clamp(18rem, 29vw, 22rem);
-  padding-block: clamp(2.75rem, 5vw, 4.5rem);
   color: var(--text-bright);
+  transition: color 160ms var(--transition-smooth), border-color 160ms var(--transition-smooth);
 }
 
-.workEntry::after,
-.writingRow::after {
+.workSection {
+  position: relative;
+  padding-block: clamp(4.5rem, 7vw, 6.5rem) clamp(1.25rem, 2vw, 1.75rem);
+  overflow: hidden;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+/* Paper mode reverses the collage instead of bleaching it. The hero/notes
+   use the light theme stock; Work/About become fixed black sheets. */
+:global([data-theme="light"]) .workSection,
+:global([data-theme="light"]) .aboutSection {
+  --paper: var(--physical-black);
+  --ink: var(--physical-paper);
+  --signal: var(--physical-signal);
+  --signal-deep: var(--physical-signal-deep);
+  --signal-wash: color-mix(in srgb, var(--physical-signal) 14%, transparent);
+}
+
+.workSection::before,
+.aboutSection::before {
   content: "";
   position: absolute;
-  right: 0;
-  bottom: -1px;
-  left: 0;
-  height: 1px;
-  background: var(--row-accent, var(--phosphor));
-  transform: scaleX(0);
-  transform-origin: right;
-  transition: transform 320ms var(--transition-smooth);
+  inset: 0;
   pointer-events: none;
+  opacity: 0.22;
+  background-image: radial-gradient(circle, color-mix(in srgb, var(--ink) 28%, transparent) 0 0.55px, transparent 0.72px);
+  background-size: 4px 4px;
 }
 
-.workEntry:hover::after,
-.workEntry:focus-visible::after,
-.writingRow:hover::after,
-.writingRow:focus-visible::after {
-  transform: scaleX(1);
-  transform-origin: left;
+.workSection .shell,
+.aboutSection .shell {
+  position: relative;
+  z-index: 1;
+}
+
+.sectionHeader {
+  min-height: 5rem;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(1rem, 2vw, 1.75rem);
+  border-top: 2px solid currentColor;
+}
+
+.sectionHeader a {
+  font-family: var(--font-inktrap);
+  font-size: 0.72rem;
+}
+
+/* Plate numeral, set big enough that the ink traps in the face actually
+   show. It reads as a printer's sheet number, not a nav index. */
+.sectionHeader > span {
+  min-width: 2ch;
+  color: var(--signal-deep);
+  font-family: var(--font-inktrap);
+  font-size: clamp(1.5rem, 2.6vw, 2.3rem);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.sectionAside {
+  display: flex;
+  align-items: center;
+  gap: clamp(1rem, 2.5vw, 2rem);
+}
+
+.sectionCount {
+  color: color-mix(in srgb, currentColor 55%, transparent);
+  font-family: var(--font-inktrap);
+  font-size: 0.68rem;
+  font-style: normal;
+  letter-spacing: 0.03em;
+}
+
+.sectionHeader h2 {
+  font-family: var(--font-display);
+  font-size: clamp(2.3rem, 4vw, 4rem);
+  font-weight: 600;
+  line-height: 0.98;
+  letter-spacing: 0.005em;
+}
+
+.sectionHeader a {
+  min-height: 2.75rem;
+  display: inline-flex;
+  align-items: center;
+  border-bottom: 1px solid var(--signal);
+}
+
+.workRows {
+  border: 0;
+}
+
+.workRow {
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 28%, transparent);
+}
+
+.workRow:last-child {
+  border-bottom: 0;
+}
+
+.workRowLink {
+  min-height: 11rem;
+  display: grid;
+  grid-template-columns: 3.5rem minmax(12rem, 0.75fr) minmax(18rem, 1.4fr) minmax(10rem, 0.7fr) 2rem;
+  align-items: center;
+  gap: clamp(1rem, 2.5vw, 2.5rem);
+  padding-block: 1.25rem;
+  color: inherit;
+  transition: background-color 180ms var(--transition-smooth), color 180ms var(--transition-smooth);
 }
 
 .workIndex,
-.workRole,
-.workTags,
-.workOpen,
-.rowArrow,
-.projectTopline,
-.projectSignal,
-.projectFooter {
+.workIdentity > span,
+.techLine,
+.rowArrow {
   font-family: var(--font-inktrap);
-  font-weight: 500;
 }
 
 .workIndex {
   align-self: start;
-  color: var(--text-ghost);
-  font-size: clamp(2.8rem, 5.5vw, 5rem);
-  line-height: 0.78;
-  letter-spacing: -0.08em;
-  font-variant-numeric: tabular-nums;
-  transition: color 180ms var(--transition-smooth);
-}
-
-.workIdentity {
-  min-width: 0;
-  padding-left: clamp(1rem, 2.5vw, 2rem);
-  border-left: 1px solid var(--ash);
-}
-
-.workRole {
-  display: block;
-  margin-bottom: clamp(2.5rem, 6vw, 5rem);
-  color: var(--text-dim);
-  font-size: 0.75rem;
-}
-
-.workIdentity h3,
-.projectCopy h3,
-.writingCopy h3 {
-  font-family: var(--font-display);
-  font-weight: 500;
-  letter-spacing: -0.025em;
-}
-
-.workIdentity h3 {
-  max-width: 10ch;
-  font-size: clamp(3.1rem, 6vw, 5.35rem);
-  line-height: 0.88;
-  letter-spacing: -0.055em;
-  overflow-wrap: anywhere;
-  transition: color 180ms var(--transition-smooth);
-}
-
-.workDetails {
-  align-self: end;
-  min-width: 0;
-}
-
-.workDetails > p {
-  max-width: 52ch;
-  color: var(--text-medium);
-  font-size: clamp(1rem, 1.4vw, 1.12rem);
-  line-height: 1.7;
-  text-wrap: pretty;
-}
-
-.workFooter {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 2rem;
-  margin-top: clamp(2rem, 4vw, 3.25rem);
-}
-
-.workTags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem 1rem;
-  color: var(--text-dim);
-  font-size: 0.75rem;
-}
-
-.workOpen {
-  flex: none;
-  display: inline-flex;
-  gap: 0.55rem;
-  color: var(--text-dim);
-  font-size: 0.75rem;
-}
-
-.workOpen i,
-.projectFooter i {
-  color: var(--phosphor);
-  font-style: normal;
-  transition: transform 180ms var(--transition-smooth);
-}
-
-.rowArrow {
-  align-self: center;
-  color: var(--text-ghost);
-  font-size: 0.8rem;
-  transition: color 160ms var(--transition-smooth), transform 180ms var(--transition-smooth);
-}
-
-.workEntry:hover .workIdentity h3,
-.workEntry:hover .workIndex,
-.projectTile:hover .projectCopy h3 {
-  color: var(--phosphor);
-}
-
-.workEntry:hover .workOpen i,
-.projectTile:hover .projectFooter i {
-  transform: translate(0.2rem, -0.2rem);
-}
-
-.projectGroup {
-  scroll-margin-top: 6rem;
-  margin-top: clamp(4rem, 8vw, 7rem);
-}
-
-.subheading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 2rem;
-  margin-bottom: 1rem;
-  color: var(--text-muted);
-  font-size: 0.75rem;
-}
-
-.subheading a {
-  min-height: 2.75rem;
-  display: inline-flex;
-  align-items: center;
-  color: var(--text-medium);
-}
-
-.subheading a:hover {
-  color: var(--text-bright);
-}
-
-.projectShelf {
-  display: grid;
-  grid-template-columns: minmax(0, 1.16fr) minmax(19rem, 0.84fr);
-  border-top: 1px solid var(--ash);
-  border-bottom: 1px solid var(--ash);
-}
-
-.projectShelf article:first-child {
-  grid-row: span 2;
-  border-right: 1px solid var(--ash);
-}
-
-.projectShelf article:nth-child(2) {
-  border-bottom: 1px solid var(--ash);
-}
-
-.projectTile {
-  position: relative;
-  min-height: clamp(16rem, 22vw, 19rem);
-  display: flex;
-  flex-direction: column;
-  padding: clamp(1.5rem, 3vw, 2.5rem);
-  color: var(--text-bright);
-}
-
-.projectShelf article:first-child .projectTile {
-  min-height: clamp(32rem, 44vw, 38rem);
-  padding-right: clamp(2rem, 5vw, 4.5rem);
-}
-
-.projectTopline,
-.projectFooter {
-  display: flex;
-  justify-content: space-between;
-  gap: 1.5rem;
-  color: var(--text-dim);
-  font-size: 0.72rem;
-}
-
-.projectTopline span:first-child {
-  color: var(--phosphor);
-}
-
-.projectCopy {
-  margin-block: auto;
-  padding-block: clamp(2rem, 4vw, 3.5rem);
-}
-
-.projectCopy h3 {
-  font-size: clamp(2rem, 3.4vw, 3.5rem);
-  line-height: 0.92;
-  letter-spacing: -0.045em;
-  transition: color 180ms var(--transition-smooth);
-}
-
-.projectShelf article:first-child .projectCopy h3 {
-  font-size: clamp(3.5rem, 7vw, 6.5rem);
-}
-
-.projectCopy p {
-  max-width: 48ch;
-  margin-top: 1rem;
-  color: var(--text-medium);
-  font-size: 0.9rem;
-  line-height: 1.65;
-  text-wrap: pretty;
-}
-
-.projectShelf article:first-child .projectCopy p {
-  max-width: 40ch;
-  font-size: 1rem;
-}
-
-.projectSignal {
-  display: grid;
-  grid-template-columns: auto minmax(2rem, 1fr) auto;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
-  color: var(--text-muted);
+  padding-top: 0.35rem;
+  color: var(--signal-deep);
   font-size: 0.68rem;
 }
 
-.projectSignal i {
-  position: relative;
-  height: 1px;
-  overflow: hidden;
-  background: var(--ash);
+.workIdentity h3 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 3.7vw, 3.6rem);
+  font-weight: 600;
+  line-height: 0.98;
+  letter-spacing: 0;
 }
 
-.projectSignal i::after {
+.workIdentity > span {
+  display: block;
+  margin-top: 0.65rem;
+  color: color-mix(in srgb, currentColor 58%, transparent);
+  font-size: 0.65rem;
+}
+
+.workRowLink > p {
+  max-width: 42rem;
+  color: color-mix(in srgb, currentColor 70%, transparent);
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+.techLine {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  color: color-mix(in srgb, currentColor 62%, transparent);
+  font-size: 0.68rem;
+  letter-spacing: 0.015em;
+}
+
+.techLine span::before {
+  content: "+";
+  margin-right: 0.25rem;
+  color: var(--signal-deep);
+}
+
+.rowArrow {
+  justify-self: end;
+  color: var(--signal-deep);
+  font-size: 1rem;
+}
+
+.tagBandWrap {
+  position: relative;
+  z-index: 1;
+  width: min(100% - 1rem, 100rem);
+  margin: clamp(2.75rem, 4vw, 4rem) auto clamp(3rem, 5vw, 4.75rem);
+}
+
+/* The reaching hand is pasted over the band's edge like a sticker slapped on
+   after the strip went up — black linework straight on the paper stock, with
+   its own signal flood offset underneath. */
+.tagHand {
+  position: absolute;
+  z-index: 2;
+  top: -3.5rem;
+  right: clamp(1rem, 8vw, 9rem);
+  width: clamp(8.5rem, 14vw, 13rem);
+  height: auto;
+  transform: rotate(14deg);
+  filter: drop-shadow(0.4rem 0.35rem 0 var(--signal));
+  pointer-events: none;
+}
+
+.tagBand {
+  position: relative;
+  width: 100%;
+  height: clamp(9rem, 16vw, 15rem);
+  overflow: hidden;
+  background:
+    linear-gradient(93deg, transparent 0 18%, color-mix(in srgb, var(--signal) 15%, transparent) 18% 19%, transparent 19%),
+    var(--ink);
+  clip-path: polygon(0 8%, 100% 0, 99% 91%, 1% 100%);
+}
+
+.tagBand::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: var(--phosphor);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 420ms var(--transition-smooth);
+  opacity: 0.24;
+  background-image: radial-gradient(circle, var(--paper) 0 0.65px, transparent 0.85px);
+  background-size: 4px 4px;
+  pointer-events: none;
 }
 
-.projectTile:hover .projectSignal i::after,
-.projectTile:focus-visible .projectSignal i::after {
-  transform: scaleX(1);
+.tagBand img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(78rem, 88vw);
+  height: auto;
+  transform: translate(-50%, -50%) rotate(-2deg);
 }
 
-.projectFooter > span:last-child {
-  flex: none;
-  display: inline-flex;
-  gap: 0.5rem;
+.codeSection {
+  scroll-margin-top: 5rem;
 }
 
-.writingSection {
-  background: var(--void);
+.projectCanvas {
+  margin-top: 1.25rem;
 }
 
-.writingRow {
-  --row-accent: var(--entry-accent, var(--phosphor));
+.projectPanel {
   position: relative;
-  min-height: 14rem;
+  border: 0;
+}
+
+.projectPanel:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: clamp(4.5rem, 7vw, 6rem);
+  bottom: 0;
+  width: clamp(4rem, 9vw, 7rem);
+  height: 1px;
+  background: color-mix(in srgb, var(--ink) 26%, transparent);
+  pointer-events: none;
+}
+
+.projectPanelLink {
+  min-height: 7.5rem;
   display: grid;
-  grid-template-columns: 15rem minmax(0, 1fr) 1rem;
+  grid-template-columns: 3.25rem minmax(0, 1fr) 1.25rem;
   align-items: center;
-  gap: clamp(1.5rem, 4vw, 3.5rem);
-  padding-block: 1.5rem;
+  gap: clamp(1rem, 2.5vw, 2.25rem);
+  padding-block: 1rem;
+  color: var(--ink);
+  transition: background-color 180ms var(--transition-smooth), color 180ms var(--transition-smooth);
+}
+
+.projectLead .projectPanelLink {
+  min-height: 9.5rem;
+  grid-template-columns: 3.25rem minmax(0, 1fr) 1.25rem;
+}
+
+.projectNumber {
+  align-self: start;
+  padding-top: 0.35rem;
+  color: var(--signal-deep);
+  font-family: var(--font-inktrap);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.projectText {
+  min-width: 0;
+}
+
+/* Featured projects are indexed rows, not cards. Once the panel art was
+   dropped the single full-width column left the title on the far left and its
+   "source" label stranded a thousand pixels away on the right; splitting the
+   text into title / description / stack columns matches the Work rows above
+   and closes the gap. */
+.projectText {
+  display: grid;
+  grid-template-columns: minmax(11rem, 0.78fr) minmax(16rem, 1.35fr) minmax(9rem, 0.62fr);
+  align-items: center;
+  gap: clamp(1rem, 2.5vw, 2.5rem);
+}
+
+.projectTitleLine {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.55rem;
+}
+
+.projectTitleLine h3 {
+  font-family: var(--font-display);
+  font-size: clamp(2.35rem, 3.6vw, 3.8rem);
+  font-weight: 600;
+  line-height: 0.98;
+  letter-spacing: 0;
+}
+
+.projectPanel:not(.projectLead) .projectTitleLine h3 {
+  font-size: clamp(2rem, 2.7vw, 2.8rem);
+}
+
+.projectTitleLine > span {
+  flex: 0 0 auto;
+  border-bottom: 1px solid var(--signal);
+  font-family: var(--font-inktrap);
+  font-size: 0.6rem;
+}
+
+.projectText > p {
+  max-width: 42rem;
+  color: color-mix(in srgb, var(--ink) 69%, transparent);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.projectArrow {
+  justify-self: end;
+  color: var(--signal-deep);
+  font-family: var(--font-inktrap);
+  font-size: 0.9rem;
+}
+
+.projectIndex {
+  margin-top: 1.25rem;
+  border-top: 2px solid var(--ink);
+}
+
+.projectIndexRow {
+  position: relative;
+  border: 0;
+}
+
+.projectIndexRow:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 4.5rem;
+  bottom: 0;
+  width: 4rem;
+  height: 1px;
+  background: color-mix(in srgb, var(--ink) 22%, transparent);
+  pointer-events: none;
+}
+
+.projectIndexRow > a {
+  min-height: 3.75rem;
+  display: grid;
+  grid-template-columns: 3.5rem minmax(8rem, 0.75fr) minmax(13rem, 1.2fr) minmax(10rem, 0.8fr) 1.5rem;
+  align-items: center;
+  gap: 1rem;
+  color: inherit;
+  transition: background-color 180ms var(--transition-smooth), color 180ms var(--transition-smooth);
+}
+
+.projectIndexRow > a > span,
+.projectIndexRow > a > i {
+  color: var(--signal-deep);
+  font-family: var(--font-inktrap);
+  font-size: 0.7rem;
+  font-style: normal;
+}
+
+.projectIndexRow h3 {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+}
+
+.projectIndexRow p {
+  color: color-mix(in srgb, currentColor 67%, transparent);
+  font-size: 0.8rem;
+}
+
+/* One hard-cropped fankit plate bridges the paper index and the dark notes
+   sheet. The aperture stays a transition rather than a second poster, but it
+   was tight enough to show only about a third of the figure; the extra height
+   here is paid for out of the two sections' padding below, so the gap between
+   them barely moves. */
+.reaperBreak {
+  position: relative;
+  z-index: 2;
+  height: clamp(11rem, 14vw, 14rem);
+  overflow: hidden;
+  isolation: isolate;
+  background: linear-gradient(to bottom, var(--paper) 0 62%, var(--obsidian) 62% 100%);
+}
+
+:global([data-theme="light"]) .reaperBreak {
+  background: linear-gradient(to bottom, var(--physical-black) 0 62%, var(--obsidian) 62% 100%);
+}
+
+.reaperBreak::after {
+  content: none;
+}
+
+/* At 110% the figure's centre sat well below the aperture, so the window only
+   caught its top edge. Dropping it to the bottom line shows as much of the
+   plate as the band can hold. */
+.reaperBreak img {
+  position: absolute;
+  z-index: 1;
+  top: 100%;
+  left: 50%;
+  width: clamp(40rem, 54vw, 54rem);
+  height: auto;
+  transform: translate(-50%, -50%) rotate(-0.5deg);
+  filter: drop-shadow(0.45rem 0.34rem 0 var(--signal-deep));
+  pointer-events: none;
+}
+
+/* No top padding: the notes header's rule sits directly under the break so the
+   reaper stands on that line rather than floating above it. */
+.writingSection {
+  position: relative;
+  padding-block: 0 clamp(3.75rem, 6vw, 5.5rem);
+  background: var(--obsidian);
   color: var(--text-bright);
 }
 
-.writingImage {
+/* Margin rule. At 8vw it crossed the "full archive" link and the reading-time
+   column; it belongs outside the content shell, not through it. */
+.writingSection::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: max(0.75rem, calc((100vw - 84rem) / 2 - 1.25rem));
+  bottom: 0;
+  width: 1px;
+  background: var(--ash);
+}
+
+@media (max-width: 1450px) {
+  .writingSection::after {
+    display: none;
+  }
+}
+
+.sectionHeaderDark > span {
+  color: var(--signal);
+}
+
+.postList {
+  border: 0;
+}
+
+.postListHeader,
+.postRow > a {
+  display: grid;
+  grid-template-columns: 2.5rem minmax(10rem, 11.5rem) minmax(0, 1fr) minmax(6rem, 8rem) 6.5rem 4rem 1.25rem;
+  align-items: center;
+  gap: clamp(0.75rem, 1.8vw, 1.5rem);
+}
+
+.postListHeader {
+  min-height: 2.5rem;
+  border-bottom: 1px solid var(--ash);
+  color: var(--text-muted);
+  font-family: var(--font-inktrap);
+  font-size: 0.62rem;
+  letter-spacing: 0.035em;
+}
+
+.postRow {
+  border-bottom: 1px solid var(--ash);
+}
+
+.postRow:last-child {
+  border-bottom: 0;
+}
+
+.postRow > a {
+  min-height: 10.25rem;
+  padding-block: 1rem;
+  color: inherit;
+  transition: background-color 180ms var(--transition-smooth), color 180ms var(--transition-smooth);
+}
+
+.postIndex {
+  align-self: start;
+  padding-top: 0.2rem;
+  color: var(--signal);
+  font-family: var(--font-inktrap);
+  font-size: 0.65rem;
+}
+
+.postImage {
   position: relative;
   aspect-ratio: 16 / 10;
   overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--text-bright) 18%, transparent);
   background: var(--graphite);
 }
 
-.writingImage img {
+.postImage img {
   object-fit: cover;
-  filter: saturate(0.94) contrast(1.03);
-  transition: transform 400ms var(--transition-smooth);
+  object-position: center;
+  filter: saturate(0.72) contrast(1.04) brightness(1.12);
+  transition: transform 400ms var(--transition-smooth), filter 220ms var(--transition-smooth);
 }
 
-.writingRow:hover .writingImage img {
-  transform: scale(1.018);
+.postBody {
+  min-width: 0;
 }
 
-.writingMeta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem 1rem;
-  margin-bottom: 0.75rem;
-  color: var(--text-dim);
-  font-size: 0.75rem;
+.postMeta {
+  display: contents;
 }
 
-.writingMeta span:first-child {
-  color: var(--entry-accent, var(--phosphor));
+.postCategory,
+.postDate,
+.postReading {
+  color: var(--text-muted);
+  font-family: var(--font-inktrap);
+  font-size: 0.66rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
 }
 
-.writingCopy h3 {
-  max-width: 24ch;
-  font-size: clamp(1.75rem, 3.5vw, 2.8rem);
-  line-height: 1.02;
-  transition: color 180ms var(--transition-smooth);
+.postCategory {
+  color: var(--signal);
 }
 
-.writingRow:hover .writingCopy h3,
-.writingRow:hover .rowArrow {
-  color: var(--entry-accent, var(--phosphor));
+.postBody h3 {
+  max-width: 26ch;
+  font-family: var(--font-display);
+  font-size: clamp(1.65rem, 2.5vw, 2.45rem);
+  font-weight: 600;
+  line-height: 1.03;
+  letter-spacing: 0;
+  text-wrap: balance;
 }
 
-.writingCopy > p {
-  max-width: 47rem;
-  margin-top: 0.75rem;
-  color: var(--text-medium);
-  font-size: 0.95rem;
-  line-height: 1.65;
-  text-wrap: pretty;
+.postBody > p {
+  max-width: 62ch;
+  margin-top: 0.4rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
-.sectionAction {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 2rem;
+.postRow .rowArrow {
+  color: var(--signal);
 }
 
 .aboutSection {
-  padding-bottom: clamp(4rem, 8vw, 7rem);
+  position: relative;
+  padding-block: clamp(4.5rem, 7vw, 6rem) 0;
+  overflow: hidden;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+.aboutSection .shell {
+  width: min(calc(100% - 3rem), 90rem);
 }
 
 .aboutGrid {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(17rem, 0.65fr);
-  gap: clamp(3rem, 10vw, 9rem);
+  grid-template-columns: minmax(14rem, 0.38fr) minmax(0, 1.62fr);
+  align-items: start;
+  gap: clamp(2.5rem, 5vw, 5rem);
+  margin-top: clamp(2.5rem, 4vw, 3.5rem);
+}
+
+.aboutArt {
+  position: relative;
+  z-index: 0;
+  min-height: 24rem;
+  display: grid;
+  place-items: start center;
+  padding-top: 1rem;
+}
+
+/* Two registration frames behind the print — one ruled in ink, one pulled
+   off-register in signal — so the artwork reads as pasted, not placed. */
+.aboutArt::before,
+.aboutArt::after {
+  content: "";
+  position: absolute;
+  top: 2.25rem;
+  width: min(12rem, 82%);
+  aspect-ratio: 1;
+  border: 1px solid color-mix(in srgb, var(--ink) 25%, transparent);
+  transform: rotate(7deg);
+}
+
+.aboutArt::after {
+  border-color: color-mix(in srgb, var(--signal) 55%, transparent);
+  transform: translate(0.6rem, 0.5rem) rotate(7deg);
+}
+
+.aboutArt img {
+  position: relative;
+  z-index: 1;
+  width: min(14rem, 100%);
+  height: auto;
+  transform: translateX(-0.35rem) rotate(-3deg);
+  filter: drop-shadow(0.38rem 0.32rem 0 var(--signal));
+}
+
+:global([data-theme="light"]) .aboutArt img {
+  filter: invert(1) drop-shadow(0.38rem 0.32rem 0 var(--signal));
+  mix-blend-mode: screen;
 }
 
 .aboutCopy {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(20rem, 1.1fr) minmax(18rem, 0.9fr);
+  gap: clamp(2.5rem, 5vw, 5rem);
+  align-items: start;
 }
 
-.aboutCopy p {
-  max-width: 46rem;
-  color: var(--text-medium);
-  font-size: clamp(1.15rem, 2.2vw, 1.55rem);
-  line-height: 1.65;
+.aboutBio {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.aboutBio p {
+  max-width: 48rem;
+  color: color-mix(in srgb, var(--ink) 78%, transparent);
+  font-size: clamp(1.08rem, 1.35vw, 1.28rem);
+  line-height: 1.66;
   text-wrap: pretty;
 }
 
-.aboutCopy a {
-  color: var(--text-bright);
-  text-decoration-line: underline;
-  text-decoration-color: color-mix(in srgb, var(--phosphor) 62%, transparent);
-  text-decoration-thickness: 0.08em;
-  text-underline-offset: 0.18em;
-  transition:
-    color 160ms ease,
-    text-decoration-color 160ms ease;
+.aboutBio a {
+  border-bottom: 1px solid var(--signal);
 }
 
-.aboutCopy a:focus-visible {
-  border-radius: 0.1em;
-  outline: 2px solid var(--phosphor);
-  outline-offset: 0.18em;
+.aboutFacts {
+  margin: 0;
+  border-top: 2px solid var(--ink);
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .aboutCopy a:hover {
-    color: var(--phosphor);
-    text-decoration-color: var(--phosphor);
-  }
+.aboutFacts > div {
+  min-height: 4rem;
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.72fr) minmax(0, 1.28fr);
+  align-items: center;
+  gap: 1.25rem;
+  padding-block: 0.65rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 28%, transparent);
 }
 
-.aboutDetails {
-  display: flex;
-  flex-direction: column;
-  gap: 2.5rem;
+.aboutFacts > div:last-child {
+  border-bottom: 0;
 }
 
-.aboutDetails span,
-.contactBlock > span {
-  display: block;
-  margin-bottom: 0.65rem;
-  color: var(--text-muted);
-  font-size: 0.75rem;
+.aboutFacts dt {
+  font-family: var(--font-inktrap);
+  font-size: 0.65rem;
+  line-height: 1.35;
 }
 
-.aboutDetails p {
-  color: var(--text-medium);
-  font-size: 0.92rem;
-  line-height: 1.75;
+.aboutFacts dd {
+  color: color-mix(in srgb, var(--ink) 71%, transparent);
+  font-size: 0.86rem;
+  line-height: 1.55;
 }
 
-.aboutDetails p:has(a) {
+.aboutLinks {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem 1rem;
+  gap: 0.35rem 1rem;
 }
 
-.aboutDetails a {
+.aboutLinks a {
   min-height: 2.75rem;
   display: inline-flex;
   align-items: center;
-  color: var(--text-medium);
+  border-bottom: 1px solid color-mix(in srgb, var(--signal) 60%, transparent);
 }
 
-.aboutDetails a:hover {
-  color: var(--phosphor);
+.contactRow {
+  min-height: 9rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(20rem, 0.85fr);
+  align-items: center;
+  gap: clamp(2rem, 5vw, 4rem);
+  margin-top: clamp(3rem, 6vw, 5rem);
+  padding-block: 2.5rem;
+  border-top: 2px solid var(--ink);
 }
 
-.contactBlock {
-  scroll-margin-top: 6rem;
-  margin-top: clamp(6rem, 12vw, 10rem);
-  padding-top: 2rem;
-  border-top: 1px solid var(--ash);
+.contactDock {
+  width: 100%;
 }
 
-.contactBlock > a {
+.emailLink {
+  width: fit-content;
   display: inline-flex;
   align-items: baseline;
-  gap: 1rem;
-  color: var(--text-bright);
+  gap: 0.75rem;
+  /* line-height 1 on display type leaves the link shorter than a comfortable
+     tap target despite its width, so the box is padded rather than the type. */
+  padding-block: 0.3rem 0.45rem;
+  border-bottom: 3px solid var(--signal);
   font-family: var(--font-display);
-  font-size: clamp(2.6rem, 7vw, 6.5rem);
-  font-weight: 500;
+  font-size: clamp(2.2rem, 5vw, 4.8rem);
+  font-weight: 600;
   line-height: 1;
-  letter-spacing: -0.045em;
-}
-
-.contactBlock > a i {
-  color: var(--phosphor);
-  font-family: var(--font-inktrap);
-  font-size: 0.35em;
-  font-style: normal;
-  transition: transform 180ms var(--transition-smooth);
-}
-
-.contactBlock > a:hover i {
-  transform: translate(0.25rem, -0.25rem);
+  letter-spacing: 0;
 }
 
 .footer {
-  border-top: 1px solid var(--ash);
-  color: var(--text-muted);
-  font-size: 0.75rem;
+  background: var(--obsidian);
 }
 
+/* Colophon: the sheet ends the way a printed edition does — copyright,
+   the actual ink swatches, the mask, and what the thing is set in. */
 .footer .shell {
-  min-height: 5rem;
-  display: flex;
+  min-height: 5.5rem;
+  display: grid;
+  grid-template-columns: 1fr auto auto 1fr;
   align-items: center;
-  justify-content: space-between;
-  gap: 2rem;
+  gap: clamp(1rem, 3vw, 2rem);
+  color: var(--text-muted);
+  font-family: var(--font-inktrap);
+  font-size: 0.63rem;
 }
 
-@media (max-width: 1000px) {
-  .workEntry {
-    grid-template-columns: 3.5rem minmax(13rem, 0.85fr) minmax(18rem, 1.15fr);
-    gap: 1.75rem;
+.colophonNote {
+  justify-self: end;
+  text-align: right;
+}
+
+.inks {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.inks i {
+  width: 0.62rem;
+  height: 0.62rem;
+}
+
+.inks i:first-child {
+  background: var(--signal);
+}
+
+.inks i + i {
+  background: var(--acid);
+}
+
+.inks em {
+  margin-left: 0.3rem;
+  font-style: normal;
+  letter-spacing: 0.04em;
+}
+
+.mask {
+  position: relative;
+  min-width: 4.5rem;
+  min-height: 2.75rem;
+  border: 0;
+  background: transparent;
+  color: var(--signal);
+  font-family: var(--font-mono);
+  cursor: pointer;
+}
+
+/* Fankit pixel cursor, forever about to click the mask. */
+.mask::after {
+  content: "";
+  position: absolute;
+  right: -0.4rem;
+  bottom: -0.15rem;
+  width: 0.8rem;
+  height: 1.4rem;
+  background: url("/art/dedsec/cursor.webp") center / contain no-repeat;
+  filter: invert(1);
+  transform: rotate(-8deg);
+}
+
+:global([data-theme="light"]) .mask::after {
+  filter: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .heroActions a:hover {
+    border-color: var(--signal);
+    color: var(--signal);
   }
 
-  .projectShelf {
-    grid-template-columns: minmax(0, 1fr) minmax(17rem, 0.9fr);
+  .workRowLink:hover,
+  .projectIndexRow > a:hover {
+    background: var(--ink);
+    color: var(--paper);
+    box-shadow: 0.75rem 0 0 var(--ink), -0.75rem 0 0 var(--ink);
+  }
+
+  .workRowLink:hover .techLine span::before,
+  .projectIndexRow > a:hover .techLine span::before {
+    color: var(--signal);
+  }
+
+  .projectPanelLink:hover {
+    background: color-mix(in srgb, var(--ink) 5%, transparent);
+  }
+
+  .projectPanelLink:hover .projectTitleLine > span,
+  .projectPanelLink:hover .projectArrow {
+    color: var(--signal-deep);
+  }
+
+  .postRow > a:hover {
+    background: var(--graphite);
+    box-shadow: 0.75rem 0 0 var(--graphite), -0.75rem 0 0 var(--graphite);
+  }
+
+  .postRow > a:hover .postImage img {
+    filter: saturate(0.9) contrast(1.02) brightness(1.16);
   }
 }
 
-@media (max-width: 760px) {
-  .shell {
-    width: min(calc(100% - 2rem), 72rem);
+@media (max-width: 1050px) {
+  .aboutCopy {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
   }
 
-  .hero {
-    min-height: 88svh;
-  }
-
-  .heroStatus {
-    padding-top: 1.25rem;
-  }
-
-  .heroStatus span:last-child {
+  .heroEdge {
     display: none;
   }
 
-  .asciiStage {
-    padding-block: 4rem;
+  .heroCopy {
+    grid-column: 1 / 11;
   }
 
-  .asciiWordmark {
-    font-size: clamp(0.31rem, 1.78vw, 0.58rem);
+  .workRowLink {
+    grid-template-columns: 2.5rem minmax(11rem, 0.75fr) minmax(16rem, 1.35fr) 1.5rem;
   }
 
-  .sectionHeading {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
+  .workRowLink .techLine {
+    display: none;
   }
 
-  .sectionHeadingMeta {
-    padding-top: 0;
+  .projectIndexRow > a {
+    grid-template-columns: 2.5rem minmax(8rem, 0.7fr) minmax(12rem, 1.2fr) 1.5rem;
   }
 
-  .workEntry {
-    grid-template-columns: 2.25rem minmax(0, 1fr);
-    gap: 1.25rem;
+  .projectIndexRow .techLine {
+    display: none;
+  }
+}
+
+@media (max-width: 820px) {
+  .shell {
+    width: min(calc(100% - 2rem), 84rem);
+  }
+
+  .aboutSection .shell {
+    width: min(calc(100% - 2rem), 90rem);
+  }
+
+  .heroMeta {
+    grid-template-columns: 1fr auto;
+  }
+
+  .heroMeta span:nth-child(2) {
+    display: none;
+  }
+
+  .heroStage {
+    --stage-pad-bottom: clamp(2.5rem, 8vw, 3.75rem);
+
     min-height: 0;
-    padding-block: 2.75rem;
+    display: block;
+    padding-block: clamp(2rem, 7vw, 3.25rem) var(--stage-pad-bottom);
+  }
+
+  /* Stacked, the cutout has nowhere to go but behind the copy: it crowded the
+     action links and got sliced into an unreadable fragment. The masthead is
+     stronger as type alone, so the plate is a desktop-only element. */
+  .heroPoster {
+    display: none;
+  }
+
+  .heroCopy {
+    width: 100%;
+    margin-top: 0;
+    padding: 0;
+  }
+
+  /* With the art gone the wordmark carries the hero on its own, so it is set
+     to fill the measure instead of sitting small in a wide empty column. */
+  .heroWordmark pre {
+    font-size: clamp(0.5rem, 3.05vw, 1.34rem);
+    text-shadow: 0.22em 0.18em 0 var(--signal-deep);
+  }
+
+  .heroCopy > p {
+    margin-top: clamp(1.25rem, 5vw, 2rem);
+    padding-inline: 0;
+    background: transparent;
+  }
+
+  .heroActions {
+    width: fit-content;
+    margin-top: clamp(1.25rem, 5vw, 2rem);
+    padding: 0;
+    background: transparent;
+  }
+
+  /* A hairline pinned 8vw from the right crosses the note titles once the
+     rows go full-bleed; it is desktop margin furniture, not mobile. */
+  .writingSection::after {
+    display: none;
+  }
+
+  .sectionHeader {
+    min-height: 4.5rem;
+  }
+
+  .reaperBreak {
+    height: 11rem;
+  }
+
+  .reaperBreak img {
+    top: 100%;
+    left: 50%;
+    width: 34rem;
+  }
+
+  .workRowLink {
+    min-height: 0;
+    grid-template-columns: 2rem minmax(0, 1fr) 1.5rem;
+    gap: 1rem;
+    padding-block: 1.5rem;
   }
 
   .workIndex {
-    font-size: 2rem;
+    grid-column: 1;
+    grid-row: 1 / 3;
   }
 
   .workIdentity {
-    padding-left: 1rem;
-  }
-
-  .workRole {
-    margin-bottom: 1.75rem;
-  }
-
-  .workIdentity h3 {
-    max-width: 13ch;
-    font-size: clamp(2.75rem, 13vw, 4.25rem);
-  }
-
-  .workDetails {
     grid-column: 2;
-    padding-left: 1rem;
   }
 
-  .workFooter {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 1.25rem;
-    margin-top: 1.75rem;
+  .workRowLink > p {
+    grid-column: 2;
   }
 
-  .subheading {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 0.25rem;
+  .workRowLink > .rowArrow {
+    grid-column: 3;
+    grid-row: 1;
   }
 
-  .projectShelf {
+  .projectLead .projectPanelLink,
+  .projectPanelLink {
+    min-height: 7rem;
+    grid-template-columns: 2rem minmax(0, 1fr) 1.25rem;
+    gap: 1rem;
+  }
+
+  .projectLead .projectPanelLink {
+    min-height: 8.5rem;
+  }
+
+  /* Back to a stacked block once there is no room for three columns. */
+  .projectText {
     display: block;
   }
 
-  .projectShelf article:first-child {
-    border-right: 0;
-    border-bottom: 1px solid var(--ash);
+  .projectText > p {
+    margin-top: 0.5rem;
   }
 
-  .projectShelf article:not(:last-child) {
-    border-bottom: 1px solid var(--ash);
+  .projectText .techLine {
+    display: none;
   }
 
-  .projectTile,
-  .projectShelf article:first-child .projectTile {
-    min-height: 21rem;
-    padding: 1.75rem 0.25rem;
+  .postListHeader {
+    display: none;
   }
 
-  .projectShelf article:first-child .projectCopy h3,
-  .projectCopy h3 {
-    font-size: clamp(2.75rem, 13vw, 4.5rem);
-  }
-
-  .writingRow {
-    grid-template-columns: 1fr 1rem;
+  .postRow > a {
+    min-height: 9rem;
+    grid-template-columns: 2rem 9rem minmax(0, 1fr) 1.25rem;
     gap: 1rem;
-    padding-block: 2rem;
   }
 
-  .writingImage {
-    grid-column: 1 / -1;
-    aspect-ratio: 16 / 9;
-  }
-
-  .writingCopy {
+  .postIndex {
     grid-column: 1;
+    grid-row: 1 / 3;
   }
 
-  .writingRow > .rowArrow {
+  .postImage {
     grid-column: 2;
-    align-self: start;
+    grid-row: 1 / 3;
+  }
+
+  .postBody {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .postMeta {
+    grid-column: 3;
+    grid-row: 2;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 0.85rem;
+  }
+
+  .postRow .rowArrow {
+    grid-column: 4;
+    grid-row: 1;
   }
 
   .aboutGrid {
-    grid-template-columns: 1fr;
-    gap: 3.5rem;
+    grid-template-columns: 10rem minmax(0, 1fr);
+    gap: 2rem;
+    margin-top: 2rem;
   }
 
-  .contactBlock > a {
-    overflow-wrap: anywhere;
-    font-size: clamp(2.4rem, 12vw, 4.5rem);
+  .aboutArt {
+    min-height: 17rem;
+    padding-top: 0.5rem;
+  }
+
+  .aboutArt img {
+    width: 9.5rem;
+  }
+
+  .aboutArt::before,
+  .aboutArt::after {
+    top: 1.5rem;
+    width: 8.5rem;
+  }
+
+  .contactRow {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding-block: 2rem;
+  }
+}
+
+@media (max-width: 620px) {
+  .heroGrid {
+    opacity: 0.3;
+    background-size: 4.5rem 4.5rem;
+  }
+
+  .heroMeta {
+    min-height: 3rem;
+    grid-template-columns: 1fr;
+    font-size: 0.7rem;
+  }
+
+  .heroMeta a {
+    display: none;
+  }
+
+  .heroStage {
+    --stage-pad-bottom: 2.75rem;
+
+    min-height: 0;
+    padding-block: 2rem var(--stage-pad-bottom);
+  }
+
+  .heroCopy {
+    width: 100%;
+  }
+
+  .heroCopy > p {
+    width: 100%;
+    margin-top: 1.35rem;
+    padding: 0;
+    font-size: clamp(0.68rem, 2.8vw, 0.78rem);
+    letter-spacing: 0.005em;
+  }
+
+  .heroActions {
+    width: 100%;
+    gap: 0 1.1rem;
+    margin-top: 1.35rem;
+    padding: 0;
+    background: transparent;
+  }
+
+  .workSection {
+    padding-block: 3.4rem 1rem;
+  }
+
+  /* Top padding stays at zero here too, or the notes rule drifts away from the
+     break and the reaper no longer stands on it. */
+  .writingSection {
+    padding-block: 0 3.4rem;
+  }
+
+  .reaperBreak {
+    height: 9.5rem;
+  }
+
+  .reaperBreak img {
+    top: 100%;
+    left: 50%;
+    width: 28rem;
+  }
+
+  .sectionHeader {
+    min-height: 4rem;
+    grid-template-columns: 1.6rem minmax(0, 1fr) auto;
+    gap: 0.75rem;
+  }
+
+  .sectionHeader h2 {
+    min-width: 0;
+    font-size: clamp(2.1rem, 10vw, 2.6rem);
+  }
+
+  .sectionHeader > span {
+    min-width: 0;
+    font-size: 1.25rem;
+  }
+
+  .sectionAside {
+    min-width: 0;
+  }
+
+  .sectionAside a {
+    white-space: nowrap;
+    font-size: 0.66rem;
+  }
+
+  .sectionAside {
+    gap: 0.75rem;
+  }
+
+  .sectionCount {
+    display: none;
+  }
+
+  .workIdentity h3 {
+    font-size: clamp(2rem, 9.5vw, 2.55rem);
+  }
+
+  .workIdentity > span {
+    margin-top: 0.45rem;
+  }
+
+  .workRowLink {
+    grid-template-columns: 1.25rem minmax(0, 1fr);
+    gap: 0.65rem 0.75rem;
+    padding-block: 1.4rem;
+  }
+
+  .workRowLink > p {
+    grid-column: 2;
+    font-size: 0.94rem;
+    line-height: 1.58;
+  }
+
+  .workRowLink > .rowArrow {
+    display: none;
+  }
+
+  .tagBandWrap {
+    width: calc(100% + 1rem);
+    margin-block: 2.6rem 3.1rem;
+    margin-left: -0.5rem;
+  }
+
+  .tagBand {
+    height: 6.75rem;
+  }
+
+  .tagBand img {
+    width: 31rem;
+  }
+
+  .tagHand {
+    top: -1.75rem;
+    right: 0.5rem;
+    width: 5.75rem;
+  }
+
+  .projectCanvas {
+    margin-top: 0.5rem;
+  }
+
+  .projectText {
+    padding: 0;
+  }
+
+  .projectTitleLine h3,
+  .projectPanel:not(.projectLead) .projectTitleLine h3 {
+    font-size: 1.85rem;
+  }
+
+  .projectLead .projectTitleLine h3 {
+    font-size: 2.15rem;
+  }
+
+  .projectTitleLine > span {
+    display: none;
+  }
+
+  .projectLead .projectPanelLink,
+  .projectPanelLink {
+    min-height: 0;
+    grid-template-columns: 1.25rem minmax(0, 1fr);
+    gap: 0.75rem;
+    padding-block: 1.2rem;
+  }
+
+  .projectLead .projectPanelLink {
+    min-height: 0;
+  }
+
+  .projectPanel:not(:last-child)::after {
+    left: 2rem;
+    width: 3.25rem;
+  }
+
+  .projectText > p {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    margin-top: 0.55rem;
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+
+  .projectArrow {
+    display: none;
+  }
+
+  .projectIndex {
+    margin-top: 0.75rem;
+    border-top-width: 1px;
+  }
+
+  .projectIndexRow > a {
+    min-height: 4.5rem;
+    grid-template-columns: 1.25rem minmax(0, 1fr);
+    align-items: start;
+    gap: 0.2rem 0.75rem;
+    padding-block: 0.85rem;
+  }
+
+  .projectIndexRow:not(:last-child)::after {
+    left: 2rem;
+    width: 3.25rem;
+  }
+
+  .projectIndexRow h3 {
+    grid-column: 2;
+    grid-row: 1;
+    font-size: 1.22rem;
+    line-height: 1.1;
+  }
+
+  .projectIndexRow p {
+    grid-column: 2;
+    grid-row: 2;
+    font-size: 0.82rem;
+    line-height: 1.45;
+  }
+
+  .projectIndexRow > a > i {
+    display: none;
+  }
+
+  .postRow > a {
+    min-height: 0;
+    grid-template-columns: 1.25rem minmax(0, 1fr);
+    align-items: start;
+    gap: 0.6rem 0.75rem;
+    padding-block: 1.5rem 1.65rem;
+  }
+
+  .postIndex {
+    grid-column: 1;
+    grid-row: 1 / 4;
+  }
+
+  .postImage {
+    grid-column: 2;
+    grid-row: 1;
+    width: 100%;
+    margin-bottom: 0.5rem;
+    aspect-ratio: 16 / 8.5;
+  }
+
+  .postBody {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .postMeta {
+    grid-column: 2;
+    grid-row: 3;
+    margin-top: 0.25rem;
+  }
+
+  .postBody h3 {
+    margin-top: 0;
+    font-size: clamp(1.65rem, 8vw, 2.15rem);
+    line-height: 1.04;
+  }
+
+  .postBody > p {
+    margin-top: 0.55rem;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    -webkit-line-clamp: 2;
+  }
+
+  .postRow .rowArrow {
+    display: none;
+  }
+
+  .aboutSection {
+    padding-top: 3.5rem;
+  }
+
+  .aboutGrid {
+    display: block;
+    margin-top: 1.25rem;
+  }
+
+  .aboutArt {
+    width: 6.5rem;
+    min-height: 7rem;
+    margin: 0 0 1rem;
+    place-items: start;
+    padding: 0;
+  }
+
+  .aboutArt img {
+    width: 6.25rem;
+    margin: 0;
+    transform: rotate(-3deg);
+    opacity: 0.78;
+  }
+
+  .aboutArt::before,
+  .aboutArt::after {
+    display: none;
+  }
+
+  .aboutCopy {
+    display: block;
+  }
+
+  .aboutBio {
+    gap: 1.1rem;
+  }
+
+  .aboutBio p {
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+
+  .aboutFacts {
+    margin-top: 2.25rem;
+    border-top-width: 1px;
+  }
+
+  .aboutFacts > div {
+    min-height: 0;
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 0.3rem;
+    padding-block: 0.95rem;
+  }
+
+  .aboutFacts dt {
+    color: var(--signal-deep);
+  }
+
+  .aboutFacts dd {
+    font-size: 0.88rem;
+    line-height: 1.55;
+  }
+
+  .contactRow {
+    gap: 1.25rem;
+    margin-top: 2.75rem;
+    padding-block: 2rem 2.5rem;
+    border-top-width: 1px;
+  }
+
+  .emailLink {
+    max-width: 100%;
+    gap: 0.45rem;
+    font-size: clamp(1.8rem, 9vw, 2.4rem);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
   }
 
   .footer .shell {
-    align-items: flex-start;
-    flex-direction: column;
-    justify-content: center;
-    gap: 0.2rem;
+    grid-template-columns: 1fr auto;
+    gap: 0.5rem;
+    font-size: 0.6rem;
+  }
+
+  .inks,
+  .colophonNote {
+    display: none;
+  }
+
+  .mask::after {
+    display: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .heroMeta a {
+    display: none;
+  }
+
+  .heroMeta {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionAside a {
+    font-size: 0.62rem;
+  }
+
+  .postRow > a {
+    grid-template-columns: 1.25rem minmax(0, 1fr);
+  }
+
+  .postMeta span:last-child {
+    display: none;
+  }
+
+  .aboutFacts > div {
+    align-items: start;
+    padding-block: 0.75rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .writingImage img,
-  .rowArrow,
-  .workEntry::after,
-  .writingRow::after,
-  .workIndex,
-  .workIdentity h3,
-  .workOpen i,
-  .projectCopy h3,
-  .projectSignal i::after,
-  .projectFooter i,
-  .sectionAction a span,
-  .aboutCopy a,
-  .contactBlock > a i {
+  .heroActions a,
+  .workRowLink,
+  .projectIndexRow > a,
+  .postRow > a,
+  .postImage img {
     transition: none;
-  }
-
-  .heroParticles {
-    display: none;
   }
 }

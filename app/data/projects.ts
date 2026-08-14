@@ -1,4 +1,15 @@
-import type { Project } from "../components/project-card";
+export type Project = {
+  id: string;
+  index: number;
+  title: string;
+  description: string;
+  tagline?: string;
+  image?: string;
+  tech: string[];
+  github?: string;
+  demo?: string;
+  featured?: boolean;
+};
 
 export const projects: Project[] = [
   {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "../components/site-header";
 import { BlogFooter } from "./components/blog-footer";
+import "./blog.css";
 
 export const metadata: Metadata = {
   title: {

@@ -1,0 +1,129 @@
+.engagement {
+  min-height: 5.5rem;
+  display: grid;
+  grid-template-columns: minmax(7.5rem, auto) minmax(0, 1fr);
+  margin-top: clamp(4rem, 8vw, 6rem);
+  border-block: 1px solid var(--ash);
+  font-family: var(--font-inktrap);
+}
+
+.views {
+  min-width: 8rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.25rem;
+  padding-right: 1.25rem;
+}
+
+.views span {
+  color: var(--text-dim);
+  font-size: 0.61rem;
+}
+
+.views strong {
+  color: var(--text-bright);
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.reactions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-left: 1px solid var(--ash);
+}
+
+.reactions button {
+  min-width: 0;
+  min-height: 5.4rem;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.55rem;
+  padding-inline: clamp(0.65rem, 1.6vw, 1rem);
+  border: 0;
+  border-right: 1px solid var(--ash);
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.65rem;
+  text-align: left;
+  transition:
+    background-color 150ms var(--transition-smooth),
+    color 150ms var(--transition-smooth);
+}
+
+.reactions button:last-child {
+  border-right: 0;
+}
+
+.reactions button:hover:not(:disabled),
+.reactions button:focus-visible,
+.reactions .selected {
+  background: var(--signal-wash);
+  color: var(--text-bright);
+}
+
+.reactions button:disabled {
+  opacity: 0.58;
+}
+
+.emoji {
+  font-size: 1.15rem;
+  line-height: 1;
+  filter: grayscale(0.25) contrast(1.08);
+}
+
+.label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reactions strong {
+  color: var(--article-accent);
+  font-size: 0.7rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 560px) {
+  .engagement {
+    grid-template-columns: 1fr;
+  }
+
+  .views {
+    min-height: 3.75rem;
+    flex-direction: row;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-right: 0;
+  }
+
+  .views strong {
+    font-family: var(--font-inktrap);
+    font-size: 0.78rem;
+  }
+
+  .reactions {
+    border-top: 1px solid var(--ash);
+    border-left: 0;
+  }
+
+  .reactions button {
+    min-height: 4rem;
+    grid-template-columns: 1fr auto;
+  }
+
+  .label {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reactions button {
+    transition: none;
+  }
+}

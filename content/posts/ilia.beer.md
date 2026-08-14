@@ -1,5 +1,5 @@
 ---
-title: Building ilia.beer, A "Buy Me a Beer" Platform
+title: I bought ilia.beer on the train home
 date: 2025-11-27
 description: I bought ilia.beer on the train home because the domain made me laugh. A few weeks later it was running from a Raspberry Pi and people could actually use it to buy me beer.
 keywords: ilia.beer, Ilia Mirzaali, rmxzy, PHP, Next.js, Google Cloud Transcoder, Raspberry Pi, video compression, web development
@@ -10,7 +10,7 @@ tags:
   - "Google Cloud"
   - "Video Processing"
   - "Web Development"
-thumbnail: /images/ilia-beer-cover-v3.png
+thumbnail: /images/ilia-beer-cover-v3.webp
 accent: "#d47a2c"
 categories:
   - Engineering
@@ -20,9 +20,9 @@ On the train ride back from the [**BAPC**](https://2025.bapc.eu/) on November 25
 
 A couple of weeks passed, and somehow that impulsive domain purchase turned into a _“Buy Me a Beer”_ platform. People can now buy me a beer, and I upload a video of me drinking it and cheering to them. And while free beers are great, I actually enjoyed building the technical side of it way more, from handling uploads and compression to optimizing playback.
 
-In this post, I’ll walk you through how this little project came to life and the decisions behind it. Who knows, maybe you’ll end up building your own “Buy Me a [insert alcoholoic drink]” site :)
+Here is how the joke turned into a real payment flow, a video pipeline, and a Raspberry Pi sitting at home doing backend duty.
 
-# Getting the specifics down
+# What it had to do
 
 To get started with planning the whole project, I first had to pin down the exact features I wanted the website to have. I ended up splitting everything into three main parts:
 
@@ -38,7 +38,7 @@ Around this time, I had just bought a Raspberry Pi and wanted to try hosting a c
 
 Because this was a hobby project and I wanted to get the most out of it, I decided to build the backend using a language I had never touched before: **PHP**. For the frontend, I went with **Next.js**, mostly because I had some experience with it and it’s incredibly easy to deploy on Vercel.
 
-## Handling payments and headaches
+## Payments and headaches
 
 If I had to name this section, I’d call it _“Where I Lost Most of My Life Expectancy.”_
 

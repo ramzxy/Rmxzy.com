@@ -2,41 +2,29 @@
 
 import { Command } from "cmdk";
 import { useEffect, useState } from "react";
-import {
-  ArrowRight,
-  Github,
-  Linkedin,
-  Mail,
-  FileText,
-  ExternalLink,
-  Sun,
-  Hash,
-  BookOpen,
-} from "lucide-react";
+import styles from "./command-palette.module.css";
 
 type Action = {
   id: string;
   label: string;
-  hint?: string;
-  group: "navigate" | "open" | "do";
-  icon: React.ReactNode;
+  detail: string;
+  group: "pages" | "elsewhere" | "actions";
   perform: () => void;
   keywords?: string[];
 };
 
 type CommandPaletteProps = {
   open: boolean;
-  setOpen: (v: boolean) => void;
+  setOpen: (open: boolean) => void;
 };
 
-export const CommandPalette = ({ open, setOpen }: CommandPaletteProps) => {
+export function CommandPalette({ open, setOpen }: CommandPaletteProps) {
   const [search, setSearch] = useState("");
 
-  // Cmd/Ctrl + K toggles the palette
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
+    const onKey = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
         setOpen(!open);
       }
     };
@@ -44,7 +32,6 @@ export const CommandPalette = ({ open, setOpen }: CommandPaletteProps) => {
     return () => document.removeEventListener("keydown", onKey);
   }, [open, setOpen]);
 
-  // Reset query each time we open
   useEffect(() => {
     if (!open) setSearch("");
   }, [open]);
@@ -52,272 +39,108 @@ export const CommandPalette = ({ open, setOpen }: CommandPaletteProps) => {
   const go = (id: string) => () => {
     setOpen(false);
     requestAnimationFrame(() => {
-      const el = document.getElementById(id);
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "start" });
-      } else {
-        window.location.href = `/#${id}`;
-      }
+      const element = document.getElementById(id);
+      if (element) element.scrollIntoView({ behavior: "smooth", block: "start" });
+      else window.location.href = `/#${id}`;
     });
   };
 
   const openUrl = (url: string, newTab = true) => () => {
     setOpen(false);
-    if (newTab) {
-      window.open(url, "_blank", "noopener,noreferrer");
-    } else {
-      window.location.href = url;
-    }
+    if (newTab) window.open(url, "_blank", "noopener,noreferrer");
+    else window.location.href = url;
   };
 
   const toggleTheme = () => {
     setOpen(false);
-    const html = document.documentElement;
-    html.classList.add("theme-transitioning");
-    const next = html.getAttribute("data-theme") === "light" ? "dark" : "light";
-    html.setAttribute("data-theme", next);
-    window.dispatchEvent(new Event("theme-change"));
+    const root = document.documentElement;
+    root.classList.add("theme-transitioning");
+    const next = root.getAttribute("data-theme") === "light" ? "dark" : "light";
+    root.setAttribute("data-theme", next);
+    window.dispatchEvent(new CustomEvent("theme-change", { detail: next }));
     try {
       localStorage.setItem("theme", next);
     } catch {}
-    window.setTimeout(
-      () => html.classList.remove("theme-transitioning"),
-      380,
-    );
+    window.setTimeout(() => root.classList.remove("theme-transitioning"), 380);
   };
 
   const actions: Action[] = [
-    // Navigate
-    {
-      id: "nav-work",
-      label: "Go to work",
-      hint: "[01]",
-      group: "navigate",
-      icon: <Hash size={14} />,
-      perform: go("work"),
-      keywords: ["jobs", "ramsy", "drone"],
-    },
-    {
-      id: "nav-projects",
-      label: "Go to personal projects",
-      hint: "inside work",
-      group: "navigate",
-      icon: <Hash size={14} />,
-      perform: go("projects"),
-      keywords: ["khor", "cedis", "side"],
-    },
-    {
-      id: "nav-writing",
-      label: "Go to writing",
-      hint: "[02]",
-      group: "navigate",
-      icon: <Hash size={14} />,
-      perform: go("writing"),
-      keywords: ["blog", "notes", "articles"],
-    },
-    {
-      id: "nav-about",
-      label: "Go to about",
-      hint: "[03]",
-      group: "navigate",
-      icon: <Hash size={14} />,
-      perform: go("about"),
-      keywords: ["bio", "skills"],
-    },
-    {
-      id: "nav-connect",
-      label: "Go to contact",
-      hint: "email",
-      group: "navigate",
-      icon: <Hash size={14} />,
-      perform: go("connect"),
-      keywords: ["email", "hire", "reach"],
-    },
-
-    // Open external
-    {
-      id: "open-github",
-      label: "Open GitHub",
-      hint: "github.com/ramzxy",
-      group: "open",
-      icon: <Github size={14} />,
-      perform: openUrl("https://github.com/ramzxy"),
-    },
-    {
-      id: "open-linkedin",
-      label: "Open LinkedIn",
-      hint: "/in/ramzxy",
-      group: "open",
-      icon: <Linkedin size={14} />,
-      perform: openUrl("https://linkedin.com/in/ramzxy"),
-    },
-    {
-      id: "open-blog",
-      label: "Open all writing",
-      hint: "rmxzy.com/blog",
-      group: "open",
-      icon: <BookOpen size={14} />,
-      perform: openUrl("/blog", false),
-    },
-    {
-      id: "open-ramsy",
-      label: "Open ramsy.eu",
-      hint: "security firm",
-      group: "open",
-      icon: <ExternalLink size={14} />,
-      perform: openUrl("https://ramsy.eu"),
-    },
-    {
-      id: "open-drone",
-      label: "Open droneteamtwente.nl",
-      hint: "uni team",
-      group: "open",
-      icon: <ExternalLink size={14} />,
-      perform: openUrl("https://droneteamtwente.nl"),
-    },
-    {
-      id: "open-khor",
-      label: "Open Khor on GitHub",
-      hint: "kernel orchestra",
-      group: "open",
-      icon: <Github size={14} />,
-      perform: openUrl("https://github.com/ramzxy/khor"),
-    },
-    {
-      id: "open-cedis",
-      label: "Open Cedis on GitHub",
-      hint: "redis clone",
-      group: "open",
-      icon: <Github size={14} />,
-      perform: openUrl("https://github.com/ramzxy/Cedis"),
-    },
-
-    // Do
-    {
-      id: "do-email",
-      label: "Email me",
-      hint: "me@rmxzy.com",
-      group: "do",
-      icon: <Mail size={14} />,
-      perform: openUrl("mailto:me@rmxzy.com", false),
-    },
-    {
-      id: "do-cv",
-      label: "Download resume",
-      hint: "PDF",
-      group: "do",
-      icon: <FileText size={14} />,
-      perform: openUrl("/resume.pdf"),
-    },
-    {
-      id: "do-theme",
-      label: "Toggle theme",
-      hint: "light / dark",
-      group: "do",
-      icon: <Sun size={14} />,
-      perform: toggleTheme,
-    },
+    { id: "work", label: "Work", detail: "01", group: "pages", perform: go("work"), keywords: ["jobs", "ramsy", "drone"] },
+    { id: "projects", label: "Projects", detail: "02", group: "pages", perform: go("projects"), keywords: ["code", "khor", "cedis"] },
+    { id: "writing", label: "Writing", detail: "03", group: "pages", perform: openUrl("/blog", false), keywords: ["blog", "notes", "articles"] },
+    { id: "about", label: "About", detail: "04", group: "pages", perform: go("about"), keywords: ["bio", "skills", "ilia"] },
+    { id: "github", label: "GitHub", detail: "ramzxy", group: "elsewhere", perform: openUrl("https://github.com/ramzxy") },
+    { id: "codeforces", label: "Codeforces", detail: "Rmsy0x", group: "elsewhere", perform: openUrl("https://codeforces.com/profile/Rmsy0x") },
+    { id: "ramsy", label: "ramsy.eu", detail: "security", group: "elsewhere", perform: openUrl("https://ramsy.eu") },
+    { id: "email", label: "Email Ilia", detail: "me@rmxzy.com", group: "actions", perform: openUrl("mailto:me@rmxzy.com", false), keywords: ["contact"] },
+    { id: "resume", label: "Open resume", detail: "PDF", group: "actions", perform: openUrl("/Resume.pdf"), keywords: ["cv"] },
+    { id: "theme", label: "Switch paper / ink", detail: "theme", group: "actions", perform: toggleTheme, keywords: ["dark", "light"] },
   ];
 
   const groupLabels: Record<Action["group"], string> = {
-    navigate: "navigate",
-    open: "open",
-    do: "do",
+    pages: "On this site",
+    elsewhere: "Elsewhere",
+    actions: "Actions",
   };
 
   return (
     <Command.Dialog
       open={open}
       onOpenChange={setOpen}
-      label="Command palette"
-      className="fixed inset-0 z-[100] flex items-start justify-center pt-[15vh] px-4"
+      label="Site index"
+      className={styles.dialog}
     >
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-[var(--void)]/80 backdrop-blur-sm"
-        onClick={() => setOpen(false)}
-        aria-hidden
-      />
-
-      {/* Panel */}
-      <div className="relative w-full max-w-xl rounded-lg border border-[var(--ash)] bg-[var(--graphite)] shadow-[0_0_60px_var(--phosphor-glow)] overflow-hidden font-mono">
-        {/* Title bar */}
-        <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--ash)] bg-[var(--smoke)]">
-          <div className="flex items-center gap-2 text-xs text-[var(--text-dim)]">
-            <span className="w-2 h-2 rounded-full bg-[var(--phosphor)]" />
-            <span>~/rmxzy</span>
-          </div>
-          <span className="text-[10px] text-[var(--text-ghost)] uppercase tracking-wider">
-            esc to close
-          </span>
+      <div className={styles.backdrop} onClick={() => setOpen(false)} aria-hidden />
+      <div className={styles.panel}>
+        <div className={styles.masthead}>
+          <span>RMXZY / INDEX</span>
+          <span>Esc closes</span>
         </div>
 
-        {/* Prompt + input */}
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-[var(--ash)]">
-          <span className="text-[var(--phosphor)] text-sm">$</span>
+        <div className={styles.search}>
+          <span aria-hidden>find</span>
           <Command.Input
             value={search}
             onValueChange={setSearch}
-            placeholder="type a command... (work, github, email, theme)"
-            className="flex-1 bg-transparent outline-none text-sm text-[var(--text-bright)] placeholder:text-[var(--text-ghost)]"
+            placeholder="pages, projects, links"
+            autoFocus
           />
         </div>
 
-        {/* List */}
-        <Command.List className="max-h-[50vh] overflow-y-auto py-2">
-          <Command.Empty className="px-4 py-6 text-sm text-[var(--text-dim)]">
-            <span className="text-[var(--ember)]">command not found:</span>{" "}
-            {search}
+        <Command.List className={styles.list}>
+          <Command.Empty className={styles.empty}>
+            Nothing here matches “{search}”.
           </Command.Empty>
 
-          {(["navigate", "open", "do"] as const).map((group) => {
-            const items = actions.filter((a) => a.group === group);
-            return (
-              <Command.Group
-                key={group}
-                heading={
-                  <span className="px-4 text-[10px] uppercase tracking-wider text-[var(--phosphor)] opacity-60">
-                    // {groupLabels[group]}
-                  </span>
-                }
-                className="mb-2"
-              >
-                {items.map((a) => (
-                  <Command.Item
-                    key={a.id}
-                    value={`${a.label} ${(a.keywords || []).join(" ")}`}
-                    onSelect={a.perform}
-                    className="flex items-center gap-3 px-4 py-2 mx-2 rounded text-sm cursor-pointer text-[var(--text-medium)] data-[selected=true]:bg-[var(--smoke)] data-[selected=true]:text-[var(--text-bright)] data-[selected=true]:border-l-2 data-[selected=true]:border-[var(--phosphor)] data-[selected=true]:pl-[14px] transition-colors"
-                  >
-                    <span className="text-[var(--text-dim)] shrink-0">
-                      {a.icon}
-                    </span>
-                    <span className="flex-1 truncate">{a.label}</span>
-                    {a.hint && (
-                      <span className="text-xs text-[var(--text-ghost)] shrink-0">
-                        {a.hint}
-                      </span>
-                    )}
-                    <ArrowRight
-                      size={12}
-                      className="text-[var(--text-ghost)] opacity-0 group-data-[selected=true]:opacity-100 transition-opacity"
-                    />
-                  </Command.Item>
-                ))}
-              </Command.Group>
-            );
-          })}
+          {(["pages", "elsewhere", "actions"] as const).map((group) => (
+            <Command.Group
+              key={group}
+              heading={<span>{groupLabels[group]}</span>}
+              className={styles.group}
+            >
+              {actions.filter((action) => action.group === group).map((action, index) => (
+                <Command.Item
+                  key={action.id}
+                  value={`${action.label} ${(action.keywords ?? []).join(" ")}`}
+                  onSelect={action.perform}
+                  className={styles.item}
+                >
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <strong>{action.label}</strong>
+                  <small>{action.detail}</small>
+                  <i aria-hidden>↗</i>
+                </Command.Item>
+              ))}
+            </Command.Group>
+          ))}
         </Command.List>
 
-        {/* Footer */}
-        <div className="flex items-center justify-between px-4 py-2 border-t border-[var(--ash)] bg-[var(--smoke)] text-[10px] text-[var(--text-ghost)] uppercase tracking-wider">
-          <div className="flex items-center gap-3">
-            <span>↑↓ navigate</span>
-            <span>↵ select</span>
-          </div>
-          <span>⌘K</span>
+        <div className={styles.footer}>
+          <span>↑↓ move</span>
+          <span>Enter open</span>
+          <span>Ctrl K</span>
         </div>
       </div>
     </Command.Dialog>
   );
-};
+}
