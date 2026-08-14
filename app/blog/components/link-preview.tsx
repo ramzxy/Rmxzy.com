@@ -32,12 +32,12 @@ const knownPreviews: Record<string, Preview> = {
   "github.com/ramzxy/quarto": {
     title: "ChokerJoker / Quarto",
     description: "The Quarto solver, game engine, and its full source code.",
-    image: "/images/quarto.jpg",
+    image: "/images/quarto.webp",
   },
   "github.com/ramzxy/ilia.beer": {
     title: "ilia.beer on GitHub",
     description: "Source for the buy-me-a-beer platform and video pipeline.",
-    image: "/images/beer.png",
+    image: "/images/beer.webp",
   },
   "ilia.beer": {
     title: "ilia.beer",

@@ -42,8 +42,11 @@ export function ScrollBlogIntro({ latest }: { latest: BlogPostSummary }) {
           className="scroll-blog-intro__media"
           style={{ scale: reduceMotion ? 1 : mediaScale }}
         >
+          {/* The covers are already lossy webp and sit under a dark shade with
+              heavy CSS filtering, so re-encoding at 95 only preserved the
+              source's own artefacts at twice the weight. */}
           {latest.thumbnail && (
-            <Image src={latest.thumbnail} alt="" fill priority quality={95} sizes="100vw" />
+            <Image src={latest.thumbnail} alt="" fill priority quality={80} sizes="100vw" />
           )}
           <motion.div
             className="scroll-blog-intro__shade"

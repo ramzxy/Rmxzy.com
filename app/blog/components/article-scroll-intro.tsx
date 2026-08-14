@@ -54,7 +54,7 @@ export function ArticleScrollIntro({ post }: ArticleScrollIntroProps) {
           style={{ scale: reduceMotion ? 1 : mediaScale }}
         >
           {post.thumbnail && (
-            <Image src={post.thumbnail} alt="" fill priority quality={95} sizes="100vw" />
+            <Image src={post.thumbnail} alt="" fill priority quality={80} sizes="100vw" />
           )}
           <motion.div
             className="article-scroll-intro__shade"

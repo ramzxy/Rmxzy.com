@@ -34,7 +34,7 @@ Some of these turned out to be much harder than others, but in the end everythin
 
 Around this time, I had just bought a Raspberry Pi and wanted to try hosting a couple of small apps on it. This seemed like the perfect chance to run the backend entirely on the Pi. Since the backend for this project was quite small and straightforward, it felt like a good opportunity to see how well the Pi performs when running a web app 24/7.
 
-![Architecture Network Diagram](/images/network.png)
+![Architecture Network Diagram](/images/network.webp)
 
 Because this was a hobby project and I wanted to get the most out of it, I decided to build the backend using a language I had never touched before: **PHP**. For the frontend, I went with **Next.js**, mostly because I had some experience with it and it’s incredibly easy to deploy on Vercel.
 

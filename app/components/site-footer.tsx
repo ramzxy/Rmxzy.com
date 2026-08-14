@@ -61,9 +61,7 @@ export function SiteFooter() {
 
         <div className={styles.colophon}>
           <span>© {new Date().getFullYear()} Ilia Mirzaali</span>
-          <span className={styles.typeNote}>
-            Whyte Inktrap + Cal Sans
-          </span>
+          <span className={styles.typeNote}>Set in Whyte Inktrap</span>
           <FooterFace />
           <div className={styles.utilities}>
             <a href="mailto:me@rmxzy.com">email</a>
