@@ -1002,12 +1002,12 @@
 @media (max-width: 720px) {
   .scroll-blog-intro,
   .article-scroll-intro {
-    height: 155svh;
+    height: auto;
   }
 
   .scroll-blog-intro.is-reduced,
   .article-scroll-intro.is-reduced {
-    height: max(calc(100svh - 4.5rem), 45rem);
+    height: auto;
   }
 
   .scroll-blog-intro__copy,
@@ -1286,14 +1286,7 @@
   }
 
   .article-reading-meta {
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-bottom: 3.5rem;
-  }
-
-  .article-reading-meta > div:nth-child(3),
-  .article-reading-meta .copy-link {
-    grid-column: 1 / -1;
+    display: none;
   }
 
   .article-prose {

@@ -142,7 +142,7 @@ export default function ArticlePage({ params }: Props) {
           }}
         />
 
-        <ArticleReadingFrame items={post.toc}>
+        <ArticleReadingFrame>
           <div className="article-reading-meta">
             <div>
               <span>Written by</span>

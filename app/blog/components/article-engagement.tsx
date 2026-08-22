@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Bot, Eye, Flame, ScanEye } from "lucide-react";
 import styles from "./article-engagement.module.css";
 
 const reactions = [
-  { id: "signal", emoji: "📡", label: "signal boost" },
-  { id: "brain", emoji: "🧠", label: "stuck with me" },
-  { id: "defiant", emoji: "🖕", label: "fuck yeah" },
+  { id: "defiant", label: "cooked" },
+  { id: "signal", label: "fedpost" },
+  { id: "brain", label: "slop" },
 ] as const;
 
 type Reaction = (typeof reactions)[number]["id"];
@@ -28,6 +29,20 @@ function formatCount(value: number) {
     notation: value >= 1000 ? "compact" : "standard",
     maximumFractionDigits: 1,
   }).format(value);
+}
+
+function ReactionMark({ reaction }: { reaction: Reaction }) {
+  const Icon = reaction === "brain"
+    ? Bot
+    : reaction === "signal"
+      ? ScanEye
+      : Flame;
+
+  return <Icon aria-hidden focusable="false" />;
+}
+
+function ViewMark() {
+  return <Eye aria-hidden focusable="false" />;
 }
 
 export function ArticleEngagement({ slug }: { slug: string }) {
@@ -95,13 +110,15 @@ export function ArticleEngagement({ slug }: { slug: string }) {
     }
   };
 
-  if (failed) return null;
-
   return (
-    <section className={styles.engagement} aria-label="Article views and reactions">
-      <div className={styles.views} aria-live="polite">
-        <span>views</span>
-        <strong>{loaded ? formatCount(metrics.views) : "—"}</strong>
+    <section
+      className={styles.engagement}
+      data-failed={failed || undefined}
+      aria-label="Article views and reactions"
+    >
+      <div className={styles.views} aria-label="Article views" aria-live="polite">
+        <span className={styles.viewMark}><ViewMark /></span>
+        <strong>{failed ? "off" : loaded ? formatCount(metrics.views) : "—"}</strong>
       </div>
 
       <div className={styles.reactions} aria-label="React to this article">
@@ -114,15 +131,21 @@ export function ArticleEngagement({ slug }: { slug: string }) {
               key={reaction.id}
               type="button"
               className={selected ? styles.selected : undefined}
+              data-reaction={reaction.id}
               onClick={() => toggleReaction(reaction.id)}
-              disabled={!loaded || busy}
+              disabled={failed || !loaded || busy}
               aria-pressed={selected}
-              aria-label={`${reaction.label}: ${metrics.reactions[reaction.id]} reactions`}
-              title={reaction.label}
+              aria-busy={busy}
+              aria-label={loaded
+                ? `${reaction.label}: ${metrics.reactions[reaction.id]} reactions`
+                : reaction.label}
+              title={`${selected ? "Remove" : "Add"} ${reaction.label} reaction`}
             >
-              <span className={styles.emoji} aria-hidden>{reaction.emoji}</span>
-              <span className={styles.label}>{reaction.label}</span>
-              <strong>{loaded ? formatCount(metrics.reactions[reaction.id]) : "—"}</strong>
+              <span className={styles.mark}><ReactionMark reaction={reaction.id} /></span>
+              <span className={styles.label}>
+                <span>{reaction.label}</span>
+              </span>
+              <strong className={styles.count}>{loaded ? formatCount(metrics.reactions[reaction.id]) : "—"}</strong>
             </button>
           );
         })}
