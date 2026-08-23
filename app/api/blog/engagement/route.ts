@@ -144,7 +144,8 @@ export async function GET(request: NextRequest) {
   const reader = readerFor(request);
   try {
     return json(await getMetrics(slug, reader.id), 200, reader);
-  } catch {
+  } catch (error) {
+    console.error("Failed to read blog engagement", error);
     return json({ error: "Engagement is temporarily unavailable." }, 503);
   }
 }
@@ -179,7 +180,8 @@ export async function POST(request: NextRequest) {
     }
 
     return json(await getMetrics(slug, reader.id), 200, reader);
-  } catch {
+  } catch (error) {
+    console.error("Failed to update blog engagement", error);
     return json({ error: "Engagement is temporarily unavailable." }, 503, reader);
   }
 }
