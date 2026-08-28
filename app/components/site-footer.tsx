@@ -65,6 +65,7 @@ export function SiteFooter() {
           <FooterFace />
           <div className={styles.utilities}>
             <a href="mailto:me@rmxzy.com">email</a>
+            <Link href="/privacy">privacy</Link>
             <a href="/feed.xml">rss</a>
             <button type="button" onClick={backToTop}>top ↑</button>
           </div>
