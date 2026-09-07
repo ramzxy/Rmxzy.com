@@ -1,14 +1,14 @@
 ---
-title: You Can Have the Dinner
+title: Hacking a hospital
 date: 2026-07-14 12:00:00
-description: My dad bet me dinner that I couldn't hack a website while we were on holiday. The website was fine. The hospital PACS behind it was open to the internet with about 145,000 studies inside.
+description: A bet with the IT managment at a hospital, ended with a cool story.
 keywords: PACS, DICOM, medical imaging security, penetration testing, AE Title, C-ECHO, C-FIND, healthcare cybersecurity, Ilia Mirzaali, rmxzy
 author: Ilia Mirzaali
 tags:
-    - "Security Research"
-    - "DICOM"
-    - "PACS"
-    - "Pentesting"
+  - "Security Research"
+  - "DICOM"
+  - "PACS"
+  - "Pentesting"
 thumbnail: /images/pacs-medical-imaging.webp
 accent: "#c86a3b"
 categories:
@@ -19,7 +19,7 @@ categories:
 
 ## The bet
 
-Ever since I first watched *Mr. Robot*, or any hacker-related show, the coolest part has always been when someone challenges the protagonist to hack a place and they act like it isn't even a challenge. Well, last week I finally had the chance to play into that.
+Ever since I first watched _Mr. Robot_, or any hacker-related show, the coolest part has always been when someone challenges the protagonist to hack a place and they act like it isn't even a challenge. Well, last week I finally had the chance to play into that.
 
 Almost a week into my much-needed vacation, my dad sent me a link to a website one morning. My first thought was to poke at it. Twenty minutes later, he sent me a voice message, and I was praying it would be about something interesting.
 
@@ -57,12 +57,12 @@ But I assume, from my wording, that you can tell what was wrong here.
 
 To test whether a DICOM system is reachable, you can send its equivalent of a ping: a **C-ECHO** request. The request succeeded, and the association response identified the implementation as a medical imaging node from a major vendor.
 
-| Check | Result |
-| --- | --- |
-| DICOM association | Accepted |
+| Check                 | Result       |
+| --------------------- | ------------ |
+| DICOM association     | Accepted     |
 | Username and password | Not required |
-| Client certificate | Not required |
-| TLS encryption | Not enabled |
+| Client certificate    | Not required |
+| TLS encryption        | Not enabled  |
 
 So yes, I could actually talk to the PACS server. That was already a massive red flag.
 
