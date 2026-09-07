@@ -1,7 +1,7 @@
 ---
 title: Hacking a hospital
 date: 2026-07-14 12:00:00
-description: A bet with the IT managment at a hospital, ended with a cool story.
+description: The hospital's IT guy bet my dad dinner that I couldn't hack their system. I took the challenge and found a way into their medical imaging system.
 keywords: PACS, DICOM, medical imaging security, penetration testing, AE Title, C-ECHO, C-FIND, healthcare cybersecurity, Ilia Mirzaali, rmxzy
 author: Ilia Mirzaali
 tags:

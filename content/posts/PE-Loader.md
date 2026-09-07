@@ -1,7 +1,7 @@
 ---
-title: I wrote a PE loader to see what Windows does first
+title: Writing a Windows executable loader in C
 date: 2024-09-02
-description: I wanted to know what Windows actually does with an EXE before it runs, so I wrote a small PE loader in C and pulled the whole process apart.
+description: What does it take to load and run an EXE yourself? I wrote a small PE loader in C, from reading the file headers to jumping into its code.
 keywords: PE loader, Portable Executable, C, WinAPI, malware development, Ilia Mirzaali, rmxzy, process injection, DLL injection
 author: Ilia Mirzaali
 tags:
@@ -256,7 +256,7 @@ void ExecutePE(IMAGE_NT_HEADERS* ntHeaders, void* baseAddress) {
 ``` 
 ---
 
-## Full Simple PE Loader **(x64)**
+## Full simple PE loader
 ```c
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
@@ -438,10 +438,8 @@ void ExecutePE(IMAGE_NT_HEADERS* ntHeaders, void* baseAddress) {
 ``` 
 --- 
 
-### **Important Note**
+## What this loader leaves out
 
-There is no PE loader that can load all PEs, the most logical way is to write a custom loader for an EXE (in malware development), for example, the above code cannot load Notepad.exe, but it can load clac.exe, the reason for this The difference is the type of PE contents.
+This example maps sections, resolves imports, applies relocations, and calls the entry point. It assumes imports are by name and only handles `IMAGE_REL_BASED_HIGHLOW` relocations. It has no TLS initialization or exception-table registration, and leaves the whole image writable and executable.
 
-
-## Conclusion
-This simple PE Loader demonstrates the basic steps required to load and execute a PE file in Windows. In real-world scenarios, more advanced PE Loaders might include additional features like manipulating internal PE structures, more complex header analysis, and various security mechanisms. These types of tools can be used for security testing, malware analysis, or custom software loading and execution.
+Those gaps limit which executables it can run. Writing it helped me understand the loading steps, but supporting more executables would mean handling the parts of the PE format this example skips.

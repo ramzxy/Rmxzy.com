@@ -31,7 +31,7 @@ export const work: Work[] = [
     title: "QuickSports B.V.",
     role: "Tech lead / full-stack engineering",
     description:
-      "I lead and mentor developers working on the admin platform, from onboarding and code review to task ownership and production delivery.",
+      "I lead the developers building QuickSport's admin platform, review their code, and help new team members get started.",
     url: "https://thequicksport.com",
     tech: ["Team Leadership", "Product Engineering", "Vue", "Node.js"],
   },

@@ -1,7 +1,7 @@
 ---
-title: ChokerJoker, the Quarto bot that changes its mind
+title: Building a Quarto AI for a university competition
 date: 2026-01-27
-description: We built a Quarto bot for a university competition and got a little carried away. It chokes out safe moves, then switches over to a perfect endgame solver.
+description: Three weeks and 1,739 lines of Java to beat other bots at a board game. How I built ChokerJoker and made it search the endgame before the clock ran out.
 keywords: ChokerJoker, Quarto solver, alpha-beta pruning, game AI, Java, competitive programming, Ilia Mirzaali, rmxzy
 author: Ilia Mirzaali
 tags:
@@ -18,16 +18,16 @@ categories:
 
 So I had to build a Quarto AI for a university competition, and I quickly ran into the classic dilemma: you can either search the entire game tree perfectly (but run out of time), or you can use some heuristic evaluation and just _hope_ it doesn't blunder. Neither option felt great.
 
-Naturally, I decided to do both. The result is **ChokerJoker**: an AI with a split personality. In the midgame, it plays like a strangler, slowly suffocating the opponent by minimizing their safe moves. Then, once the board gets sparse enough, it flips a switch and becomes a perfect endgame solver that calculates every possible outcome.
+I combined the two approaches in **ChokerJoker**. In the midgame, it tries to leave the opponent as few safe moves as possible. Once there are few enough empty squares, it switches to searching through to the end of the game.
 
 The interesting bits are the bitboards, Zobrist hashing, 32-way symmetry reduction, and the embarrassing amount of time I spent tweaking move ordering. The full project is on GitHub:
 
 👉 **[https://github.com/ramzxy/quarto](https://github.com/ramzxy/quarto)**
 
 
-# Phase 1: the strangler
+# Phase 1: restrict the opponent's moves
 
-The first phase of ChokerJoker is all about **panic maximization**. The goal is to slowly choke the opponent by reducing their options until they're basically stuck.
+The midgame search scores positions by how many safe moves remain for the opponent. It favors positions where their choices are limited.
 
 ## The core heuristic
 
@@ -41,13 +41,13 @@ Where:
 - **Safety**: The number of "safe" (square, piece) pairs the opponent can choose without giving me an immediate win
 - **Traps**: Moves that _look_ safe but actually lead to forced losses
 
-The weights (2.21 and 0.37) were hand-tuned through trial and error. Not the most scientific approach, but it worked. The idea is simple: **minimize the opponent's breathing room**. Fewer safe options = more mistakes.
+I tuned the weights (2.21 and 0.37) through trial and error. The aim was to leave the opponent fewer safe options and more chances to make a mistake.
 
 ### Why this works
 
 If you've never played Quarto, here's what makes it weird: unlike chess, where you control your own pieces, in Quarto your _opponent_ chooses which piece you place. So the player giving the piece actually has more control than the player placing it.
 
-This means instead of trying to "win positions," the Strangler focuses on **controlling the piece selection**. If I can force the opponent into a situation where _every piece they give me_ is dangerous, I've basically already won even if the board looks neutral to a human.
+The heuristic therefore pays attention to **piece selection**. If every piece the opponent can give me lets me complete a winning line, they have no safe choice left.
 
 
 ## Bitboard representation
@@ -76,7 +76,7 @@ No object lookups, no method calls, no chasing pointers through memory.
 
 ## O(1) Danger Mask Calculation
 
-The original version of the Strangler was _slow_. Every time I evaluated a position, I'd loop through all empty squares, loop through all available pieces, and check if placing that piece would create a winning line. That's **O(Empty × Pieces × Lines)**, way too expensive when you're doing it thousands of times per second. The midgame search was taking 5+ seconds per move, which is… not great when you have a time limit.
+The original midgame search was slow. Every time I evaluated a position, I'd loop through all empty squares, loop through all available pieces, and check if placing that piece would create a winning line. That's **O(Empty × Pieces × Lines)**, way too expensive when you're doing it thousands of times per second. The midgame search was taking 5+ seconds per move, which is… not great when you have a time limit.
 
 So I rewrote it using **danger masks**. I was honestly skeptical this would work, but it ended up being the single biggest performance win in the whole project.
 
@@ -99,7 +99,7 @@ This drops the safety calculation from **O(Empty × Pieces × Lines)** to **O(Pi
 
 ## Iterative deepening and aspiration windows
 
-The Strangler uses iterative deepening, starting at depth 1 and working its way up to depth 5 (or until time runs out).
+The midgame search uses iterative deepening, starting at depth 1 and working its way up to depth 5 (or until time runs out).
 
 To speed things up, I added **aspiration windows**: instead of searching with `[-∞, +∞]` bounds, I use a narrow window around the previous iteration's score:
 
@@ -111,9 +111,9 @@ int beta = previousScore + 50;
 If the search fails outside this window, I widen it and re-search. But most of the time, the score stays stable, and the narrow window causes more cutoffs, which means faster searches.
 
 
-# Phase 2: The God Engine (Perfect Endgame)
+# Phase 2: search the endgame
 
-Once the board reaches 9 empty squares (or fewer), the Strangler steps aside and the **God Engine** takes over, a brute-force Alpha-Beta solver that just calculates everything to the end of the game tree.
+With 9 empty squares or fewer, the bot switches to an alpha-beta endgame search. The aim is to search through to terminal positions within the time available.
 
 At this point, the game becomes fully solvable. There are at most **9! × 9!** positions left, which sounds huge until you realize…
 
@@ -236,7 +236,7 @@ With the 32× symmetry reduction, the transposition table gets _way_ more hits t
 
 ## Principal variation search (PVS)
 
-The God Engine uses **Principal Variation Search**, an optimization of Alpha-Beta that assumes the first move you try is usually the best one. Sounds risky, but if your move ordering is decent, it pays off big time.
+The endgame solver uses **Principal Variation Search**, an optimization of alpha-beta that assumes the first move you try is usually the best one. Its effectiveness depends on move ordering.
 
 Here's how it works:
 1. Search the first move with a full `[alpha, beta]` window
@@ -279,7 +279,7 @@ if (reduction > 0 && val > alpha) {
 }
 ```
 
-Late moves almost never matter, and LMR lets me skip most of their subtrees. In practice, this cut the average node count by about 40%. Free performance.
+Searching later moves at reduced depth cut the average node count by about 40% in my tests.
 
 ## Move ordering is where it really matters
 
@@ -316,7 +316,7 @@ With good move ordering, I often get a cutoff on the _first_ move. When that hap
 
 # Dynamic Phase Switching
 
-The last piece of the puzzle: **when do you actually switch from Strangler to God Engine?**
+The remaining decision was when to switch from the midgame heuristic to the endgame search.
 
 I went with a **dynamic threshold** based on how much time is left:
 
@@ -329,9 +329,7 @@ private int getDynamicEndgameThreshold(long elapsedMs, long timeLimitMs) {
 }
 ```
 
-If I have plenty of time, I switch to perfect play earlier (11 empty squares). If I'm running low, I wait until 9 empty squares to guarantee the search finishes.
-
-This adaptive strategy means I'm always using the best approach for the current time budget.
+With more time left, the bot starts the endgame search at 11 empty squares. With less time, it waits until 9, when there are fewer continuations to search.
 
 
 # Putting It All Together
@@ -339,23 +337,23 @@ This adaptive strategy means I'm always using the best approach for the current 
 Here's the final pipeline:
 
 1. **Opening** (16 empty squares): Pick a balanced piece to give the opponent
-2. **Midgame** (15–10 empty squares): Strangler heuristic with iterative deepening
-3. **Endgame** (≤9 empty squares): God Engine with perfect Alpha-Beta search
+2. **Midgame**: Safety heuristic with iterative deepening
+3. **Endgame** (9–11 empty squares, depending on time): Alpha-beta search to terminal positions
 4. **Every move**: Zobrist hashing → Canonical symmetry → Transposition table lookup → Move ordering → PVS + LMR
 
-The result? An AI that plays dirty in the midgame, strangling the opponent's options, and then switches to cold, mathematically perfect play once the endgame is in sight.
+The midgame heuristic limits the opponent's safe choices; the endgame search evaluates how the remaining moves play out.
 
 
 # Performance
 
 Some quick numbers:
 
-- **Midgame search** (Strangler, depth 5): ~50,000 nodes/second
-- **Endgame search** (God Engine, depth 18): ~200,000 nodes/second (thanks to TT/symmetry)
+- **Midgame search** (depth 5): ~50,000 nodes/second
+- **Endgame search** (depth 18): ~200,000 nodes/second
 - **Transposition table hit rate**: ~60% in endgame
 - **Average move time**: 0.5–2 seconds
 
-The God Engine is actually _faster_ per node than the Strangler, which I definitely didn't expect going in. Turns out when your transposition table and symmetry reduction are doing their job, you skip so many subtrees that perfect search ends up being cheaper than heuristic search. Weird, right?
+In these measurements, the endgame search processed more nodes per second than the midgame search. The table hit rate also improved in the endgame, where cached results and symmetry reduction helped avoid repeated work.
 
 
 # What I'd Do Differently
@@ -376,7 +374,7 @@ If I were to rebuild this from scratch:
 Building ChokerJoker took about three weeks of on-and-off work. Most of that time wasn't actually writing the algorithm, it was debugging why the symmetry reduction was breaking certain endgame positions, or staring at logs trying to figure out why the transposition table was returning stale scores.
 
 
-The full code is 1,739 lines of Java, all in one file. Yes, that probably horrifies proper software engineers, but it made debugging much easier. The bitboards, the Zobrist tables, the symmetry logic, the transposition table everything is right there. No hunting across 15 different classes.
+The full code is 1,739 lines of Java in one file. Keeping the board representation and search code together made it easier for me to trace bugs during the competition project.
 
 If you're building your own game AI, here's my one piece of advice: spend your time on move ordering. Alpha-Beta is fast, but only if you search good moves first. The difference between random move order and good move order is often 100x in node count.
 

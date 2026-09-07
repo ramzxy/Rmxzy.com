@@ -61,13 +61,13 @@ export default async function OpenGraphImage() {
               letterSpacing: "-0.015em",
             }}
           >
-            <span>I TAKE SYSTEMS APART.</span>
+            <span>ILIA</span>
             <span style={{ marginTop: 18, padding: "6px 16px 10px", background: PINK, color: INK }}>
-              SOME GO BACK TOGETHER.
+              MIRZAALI
             </span>
           </div>
           <div style={{ marginTop: 36, fontSize: 22, color: "#a7a0a0" }}>
-            systems / security / sound / experiments
+            systems programming / security / web
           </div>
         </div>
 
@@ -92,10 +92,10 @@ export default async function OpenGraphImage() {
             <span>NO. 01</span><span>2026</span>
           </div>
           <div style={{ display: "flex", flexDirection: "column", fontSize: 74, fontWeight: 900, lineHeight: 0.82, letterSpacing: "-0.015em" }}>
-            <span>SEEMED</span><span>LIKE A</span><span>GOOD IDEA</span>
+            <span>CODE</span><span>HACKS</span><span>NOTES</span>
           </div>
           <div style={{ alignSelf: "flex-end", padding: "7px 12px", background: PAPER, fontSize: 13 }}>
-            so I built it
+            projects and writeups
           </div>
         </div>
 
@@ -116,7 +116,7 @@ export default async function OpenGraphImage() {
             transform: "rotate(-1deg)",
           }}
         >
-          RMXZY.COM / UPDATED WHENEVER I FEEL LIKE IT
+          RMXZY.COM / ILIA MIRZAALI
         </div>
       </div>
     ),

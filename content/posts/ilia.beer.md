@@ -1,7 +1,7 @@
 ---
-title: I bought ilia.beer on the train home
+title: I built a website to get free beer
 date: 2025-11-27
-description: I bought ilia.beer on the train home because the domain made me laugh. A few weeks later it was running from a Raspberry Pi and people could actually use it to buy me beer.
+description: Buy me a beer and I'll drink it on camera for you. Building ilia.beer involved learning PHP, fighting video compression, and hosting the backend on a Raspberry Pi.
 keywords: ilia.beer, Ilia Mirzaali, rmxzy, PHP, Next.js, Google Cloud Transcoder, Raspberry Pi, video compression, web development
 author: Ilia Mirzaali
 tags:
@@ -215,5 +215,3 @@ So the final product was: **[ilia.beer](https://ilia.beer)**
 If you want to check out the full project or build your own version, the entire thing is up on GitHub:
 
 👉 **[https://github.com/ramzxy/ilia.beer](https://github.com/ramzxy/ilia.beer)**
-
-Hope you enjoyed the blog. Happy hacking, and see you in the next one.

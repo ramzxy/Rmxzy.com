@@ -69,10 +69,10 @@ export const projects: Project[] = [
     id: "quarto",
     index: 6,
     title: "Quarto",
-    tagline: "award-winning game AI",
+    tagline: "Quarto competition bot",
     description:
-      "Award-winning Quarto game AI with alpha-beta pruning over the full game tree.",
-    tech: ["C++", "Game AI", "Alpha-Beta"],
+      "A Quarto bot in Java that restricts the opponent's safe moves, then switches to an alpha-beta endgame search.",
+    tech: ["Java", "Game AI", "Alpha-Beta"],
     github: "https://github.com/ramzxy/quarto",
   },
   {

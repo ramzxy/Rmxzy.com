@@ -60,8 +60,8 @@ export function ScrollBlogIntro({ latest }: { latest: BlogPostSummary }) {
           style={{ opacity: reduceMotion ? 1 : introOpacity, y: reduceMotion ? 0 : introY }}
         >
           <span className="scroll-blog-intro__path">02 / writing</span>
-          <h1 id="blog-intro-title">Notes from things I got too deep into.</h1>
-          <p>Build logs, security writeups, and the useful parts I learned while making a mess.</p>
+          <h1 id="blog-intro-title">Hacking stories and projects I've built.</h1>
+          <p>Security writeups and build logs, with code and the problems I ran into along the way.</p>
         </motion.div>
 
         <motion.div

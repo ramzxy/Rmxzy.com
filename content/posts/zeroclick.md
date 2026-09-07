@@ -1,7 +1,7 @@
 ---
-title: The magic login link was in the response
+title: Hacking my student housing portal
 date: 2025-01-26
-description: My student housing portal returned the magic login link in its own API response. With nothing but an email address, that was enough to take over an account.
+description: All I needed to get into someone's housing account was their email address. Here's the login bug I found in my student housing portal.
 keywords: zero click, account takeover, IDOR, broken access control, web hacking, security research, Ilia Mirzaali, rmxzy
 author: Ilia Mirzaali
 tags:
